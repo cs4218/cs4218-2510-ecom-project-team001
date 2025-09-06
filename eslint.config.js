@@ -10,11 +10,11 @@ export default [
   js.configs.recommended,
 
   {
-    files: ["**/*.{js,mjs,cjs,jsx}"],
+    files: ["**/*.{js,mjs,cjs,jsx}", "**/*.test.{js,mjs,cjs,jsx}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      globals: { ...globals.node },
+      globals: { ...globals.node, ...globals.jest },
     },
     rules: {
       "no-unused-vars": "warn",
