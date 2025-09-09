@@ -1,6 +1,6 @@
 # CS4218 Project - Virtual Vault
 
-TODO: Add CI run link
+[CI link](https://github.com/cs4218/cs4218-2510-ecom-project-team001/actions/runs/17570926400/job/49906843862?pr=4)
 
 ## 1. Project Introduction
 
