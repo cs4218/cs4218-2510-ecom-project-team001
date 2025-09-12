@@ -6,7 +6,7 @@ import {
   productCountController,
   productListController,
   searchProductController,
-  relatedProductController,
+  realtedProductController,
   productCategoryController,
 } from '../controllers/productController.js';
 
@@ -536,7 +536,7 @@ describe("Product Controller Tests", () => {
     });
   });
 
-  describe("relatedProductController", () => {
+  describe("realtedProductController", () => {
     test("should return related products successfully", async () => {
       const mockProducts = [mockProduct];
       productModel.find = jest.fn().mockReturnValue({
@@ -547,7 +547,7 @@ describe("Product Controller Tests", () => {
         }),
       });
 
-      await relatedProductController(req, res);
+      await realtedProductController(req, res);
 
       expect(productModel.find).toHaveBeenCalledWith({
         category: req.params.cid,
@@ -570,7 +570,7 @@ describe("Product Controller Tests", () => {
         }),
       });
 
-      await relatedProductController(req, res);
+      await realtedProductController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith({
