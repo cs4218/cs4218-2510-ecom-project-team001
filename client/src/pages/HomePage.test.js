@@ -8,7 +8,6 @@ import { setCartMock } from '../context/cart';
 import { navigateMock } from "react-router-dom";
 
 
-
 // ---- Mocks ----
 jest.mock("axios");
 jest.mock("react-hot-toast", () => ({ success: jest.fn(), error: jest.fn() }));
@@ -107,6 +106,31 @@ test("fetches categories, total, and page 1 products on mount", async () => {
   expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
   expect(axios.get).toHaveBeenCalledWith("/api/v1/product/product-count");
   expect(axios.get).toHaveBeenCalledWith("/api/v1/product/product-list/1");
+});
+
+test('no errors in console during render', async () => {
+  // Arrange
+  const categories = [{ _id: "c1", name: "Books" }, { _id: "c2", name: "Gadgets" }];
+  const products = [
+    { _id: "a1", name: "Alpha", price: 5, description: "desc A", slug: "alpha" },
+    { _id: "a2", name: "Beta", price: 15, description: "desc B", slug: "beta" },
+  ];
+  axios.get.mockImplementation((url) => {
+    if (url === "/api/v1/category/get-category") return Promise.resolve({ data: { success: true, category: categories } });
+    if (url === "/api/v1/product/product-count") return Promise.resolve({ data: { total: 2 } });
+    if (url === "/api/v1/product/product-list/1") return Promise.resolve({ data: { products } });
+    return Promise.resolve({ data: {} });
+  });
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+  // Act 
+  renderHome();
+  await screen.findByRole("article", { name: "Product: Alpha" });
+
+  // Assert
+  expect(errorSpy).not.toHaveBeenCalled();
+
+  errorSpy.mockRestore();
 });
 
 test("renders price radios from Prices", async () => {
