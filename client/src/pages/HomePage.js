@@ -91,7 +91,11 @@ const HomePage = () => {
     setChecked(all);
   };
   useEffect(() => {
-    if (!checked.length || !radio.length) getAllProducts();
+    if (!checked.length && !radio.length) {
+      getAllProducts();
+      getTotal();
+      setPage(1);
+    }
   }, [checked.length, radio.length]);
 
   useEffect(() => {
@@ -106,6 +110,8 @@ const HomePage = () => {
         radio,
       });
       setProducts(data?.products);
+      console.log(data?.products);
+      setTotal(data?.products.length);
     } catch (error) {
       console.error(error);
       toast.error("Failed to filter products");
@@ -220,6 +226,9 @@ const HomePage = () => {
                   </>
                 )}
               </button>
+            )}
+            {!products.length && (
+              <h4>No Products Found</h4>
             )}
           </div>
         </div>

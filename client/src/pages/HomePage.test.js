@@ -334,6 +334,51 @@ test("shows 'Loadmore' when products.length < total; loads next page and then hi
   expect(screen.queryByRole("button", { name: /Loadmore/i })).not.toBeInTheDocument();
 });
 
+test('hides loadmore button on filtered products', async () => {
+  // Arrange
+  const categories = [
+        { _id: "c1", name: "Books" }, 
+        { _id: "c2", name: "Clothing" },
+        { _id: "c3", name: "Electronics" }
+  ];
+  const initial = [
+        { _id: "a1", name: "Book A`", price: 5, description: "A", slug: "book" },
+        { _id: "a2", name: "Clothes B", price: 15, description: "B", slug: "clothes" },
+  ];
+  const filtered = [
+      { _id: "a1", name: "Book A`", price: 5, description: "A", slug: "book" },
+  ];
+
+  axios.get.mockImplementation((url) => {
+    if (url === "/api/v1/category/get-category") return Promise.resolve({ data: { success: true, category: categories } });
+    if (url === "/api/v1/product/product-count") return Promise.resolve({ data: { total: 2 } });
+    if (url === "/api/v1/product/product-list/1") return Promise.resolve({ data: { products: initial } });
+    return Promise.resolve({ data: {} });
+  });
+  axios.post.mockResolvedValue({ data: { products: filtered } });
+
+  renderHome();
+  await screen.findByRole("article", { name: "Product: Book A`" });
+  await screen.findByRole("article", { name: "Product: Clothes B" });
+
+  // Act
+  fireEvent.click(screen.getByRole("checkbox", { name: "Books" }));
+  await waitFor(() => {
+    expect(axios.post).toHaveBeenCalledWith("/api/v1/product/product-filters", {
+      checked: ["c1"],
+      radio: [],
+    });
+  });
+
+  await waitFor(async () => {
+      expect(await screen.findByRole("article", { name: "Product: Book A`" })).toBeInTheDocument();
+  });
+  await waitFor(() => {
+    expect(screen.queryByRole("button", { name: /Loadmore/i })).not.toBeInTheDocument();
+  });
+
+})
+
 test('navigates to details on "More Details"', async () => {
   // Arrange
   const products = [{ _id: "a1", name: "Alpha", price: 5, description: "A", slug: "alpha" }];
@@ -590,3 +635,60 @@ test("shows error when load more fails", async () => {
 
   consoleSpy.mockRestore();
 });
+
+test('shows message when no products found on initial fetch', async () => {
+  // Arrange
+  axios.get.mockImplementation((url) => {
+    if (url === "/api/v1/category/get-category") return Promise.resolve({ data: { success: true, category: [] } });
+    if (url === "/api/v1/product/product-count") return Promise.resolve({ data: { total: 0 } });
+    if (url.startsWith("/api/v1/product/product-list/")) return Promise.resolve({ data: { products: [] } });
+    return Promise.resolve({ data: {} });
+  });
+
+  // Act
+  renderHome();
+
+  // Assert
+  expect(await screen.findByText("No Products Found")).toBeInTheDocument();
+})
+
+test('shows message when no products found on filtering', async () => {
+  // Arrange
+  const categories = [
+    { _id: "c1", name: "Books" },
+    { _id: "c2", name: "Clothing" },
+    { _id: "c3", name: "Electronics" }
+  ];
+  const initial = [
+      { _id: "a1", name: "Book A`", price: 5, description: "A", slug: "book" },
+      { _id: "a2", name: "Clothes B", price: 15, description: "B", slug: "clothes" },
+  ];
+
+  axios.get.mockImplementation((url) => {
+    if (url === "/api/v1/category/get-category") return Promise.resolve({ data: { success: true, category: categories } });
+    if (url === "/api/v1/product/product-count") return Promise.resolve({ data: { total: 10 } });
+    if (url === "/api/v1/product/product-list/1") return Promise.resolve({ data: { products: initial } });
+    return Promise.resolve({ data: {} });
+  });
+  axios.post.mockResolvedValue({ data: { products: [] } });
+
+  renderHome();
+  await screen.findByRole("article", { name: "Product: Book A`" });
+  await screen.findByRole("article", { name: "Product: Clothes B" });
+
+  // Act
+  fireEvent.click(screen.getByRole("checkbox", { name: "Electronics" }));
+
+  // Assert
+  await waitFor(() => {
+    expect(axios.post).toHaveBeenCalledWith("/api/v1/product/product-filters", {
+      checked: ["c3"],
+      radio: [],
+    });
+  });
+
+  expect(await screen.findByText("No Products Found")).toBeInTheDocument();
+  expect(screen.queryByRole("article", { name: "Product: Book A`" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("article", { name: "Product: Clothes B" })).not.toBeInTheDocument();
+
+})
