@@ -1,12 +1,12 @@
-import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { BrowserRouter, useParams } from 'react-router-dom';
-import axios from 'axios';
-import CategoryProduct from './CategoryProduct';
+import React from "react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { BrowserRouter, useParams } from "react-router-dom";
+import axios from "axios";
+import CategoryProduct from "./CategoryProduct";
 
 // Mock dependencies
-jest.mock('axios');
-jest.mock('../components/Layout', () => {
+jest.mock("axios");
+jest.mock("../components/Layout", () => {
   return function MockLayout({ children }) {
     return <div data-testid="layout">{children}</div>;
   };
@@ -15,9 +15,9 @@ jest.mock('../components/Layout', () => {
 const mockedAxios = axios;
 const mockNavigate = jest.fn();
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useParams: jest.fn(() => ({ slug: 'electronics' })),
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useParams: jest.fn(() => ({ slug: "electronics" })),
   useNavigate: () => mockNavigate,
 }));
 
@@ -28,37 +28,37 @@ const TestWrapper = ({ children }) => (
   <BrowserRouter>{children}</BrowserRouter>
 );
 
-describe('CategoryProduct Component', () => {
+describe("CategoryProduct Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   const mockCategoryData = {
     category: {
-      _id: 'cat1',
-      name: 'Electronics',
-      slug: 'electronics'
+      _id: "cat1",
+      name: "Electronics",
+      slug: "electronics"
     },
     products: [
       {
-        _id: 'prod1',
-        name: 'Laptop',
-        slug: 'laptop',
+        _id: "prod1",
+        name: "Laptop",
+        slug: "laptop",
         price: 999.99,
-        description: 'High performance laptop with excellent features for work and gaming'
+        description: "High performance laptop with excellent features for work and gaming"
       },
       {
-        _id: 'prod2',
-        name: 'Smartphone',
-        slug: 'smartphone',
+        _id: "prod2",
+        name: "Smartphone",
+        slug: "smartphone",
         price: 699.99,
-        description: 'Latest smartphone with advanced camera and fast processor'
+        description: "Latest smartphone with advanced camera and fast processor"
       }
     ]
   };
 
-  describe('Component Rendering', () => {
-    test('renders loading state initially', () => {
+  describe("Component Rendering", () => {
+    test("renders loading state initially", () => {
       mockedAxios.get.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       render(
@@ -67,10 +67,10 @@ describe('CategoryProduct Component', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTestId('layout')).toBeInTheDocument();
+      expect(screen.getByTestId("layout")).toBeInTheDocument();
     });
 
-    test('renders category name and product count after loading', async () => {
+    test("renders category name and product count after loading", async () => {
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -79,11 +79,11 @@ describe('CategoryProduct Component', () => {
         </TestWrapper>
       );
 
-      expect(await screen.findByText('Category - Electronics')).toBeInTheDocument();
-      expect(await screen.findByText('2 result found')).toBeInTheDocument();
+      expect(await screen.findByText("Category - Electronics")).toBeInTheDocument();
+      expect(await screen.findByText("2 result found")).toBeInTheDocument();
     });
 
-    test('renders products correctly', async () => {
+    test("renders products correctly", async () => {
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -92,10 +92,10 @@ describe('CategoryProduct Component', () => {
         </TestWrapper>
       );
 
-      const laptop = await screen.findByText('Laptop');
-      const smartphone = await screen.findByText('Smartphone');
-      const laptopPrice = await screen.findByText('$999.99');
-      const smartphonePrice = await screen.findByText('$699.99');
+      const laptop = await screen.findByText("Laptop");
+      const smartphone = await screen.findByText("Smartphone");
+      const laptopPrice = await screen.findByText("$999.99");
+      const smartphonePrice = await screen.findByText("$699.99");
 
       expect(laptop).toBeInTheDocument();
       expect(smartphone).toBeInTheDocument();
@@ -103,7 +103,7 @@ describe('CategoryProduct Component', () => {
       expect(smartphonePrice).toBeInTheDocument();
     });
 
-    test('does not crash when category is not found', async () => {
+    test("does not crash when category is not found", async () => {
       mockUseParams.mockResolvedValueOnce({slug: "non-exists"});
       mockedAxios.get.mockResolvedValue({ data: 
         {
@@ -118,13 +118,13 @@ describe('CategoryProduct Component', () => {
         </TestWrapper>
       );
 
-      expect(await screen.findByText('Category -')).toBeInTheDocument();
+      expect(await screen.findByText("Category -")).toBeInTheDocument();
     });
 
-    test('handles empty products array', async () => {
+    test("handles empty products array", async () => {
       mockedAxios.get.mockResolvedValue({ 
         data: { 
-          category: { name: 'Electronics' }, 
+          category: { name: "Electronics" }, 
           products: [] 
         } 
       });
@@ -136,12 +136,12 @@ describe('CategoryProduct Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Category - Electronics')).toBeInTheDocument();
+        expect(screen.getByText("Category - Electronics")).toBeInTheDocument();
       });
-      expect(screen.getByText('0 result found')).toBeInTheDocument();
+      expect(screen.getByText("0 result found")).toBeInTheDocument();
     });
 
-    test('truncates product descriptions correctly', async () => {
+    test("truncates product descriptions correctly", async () => {
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -152,19 +152,19 @@ describe('CategoryProduct Component', () => {
 
       // This is > 60 chars
       const laptopText = await screen.findByText(
-       'High performance laptop with excellent features for work and...'
+       "High performance laptop with excellent features for work and..."
       );
 
       // This is <= 60 chars
       const smartphoneText = await screen.findByText(
-       'Latest smartphone with advanced camera and fast processor'
+       "Latest smartphone with advanced camera and fast processor"
       );
 
       expect(laptopText).toBeInTheDocument();
       expect(smartphoneText).toBeInTheDocument();
     });
 
-    test('renders product images with correct src and alt attributes', async () => {
+    test("renders product images with correct src and alt attributes", async () => {
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -173,17 +173,17 @@ describe('CategoryProduct Component', () => {
         </TestWrapper>
       );
       
-      const laptopImage = await screen.findByAltText('Laptop');
-      const smartphoneImage = await screen.findByAltText('Smartphone');
+      const laptopImage = await screen.findByAltText("Laptop");
+      const smartphoneImage = await screen.findByAltText("Smartphone");
         
-      expect(laptopImage).toHaveAttribute('src', '/api/v1/product/product-photo/prod1');
-      expect(smartphoneImage).toHaveAttribute('src', '/api/v1/product/product-photo/prod2');
+      expect(laptopImage).toHaveAttribute("src", "/api/v1/product/product-photo/prod1");
+      expect(smartphoneImage).toHaveAttribute("src", "/api/v1/product/product-photo/prod2");
       
     });
   });
 
-  describe('API Integration', () => {
-    test('calls API with correct slug parameter', async () => {
+  describe("API Integration", () => {
+    test("calls API with correct slug parameter", async () => {
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -193,11 +193,11 @@ describe('CategoryProduct Component', () => {
       );
 
       await waitFor(() => {
-        expect(mockedAxios.get).toHaveBeenCalledWith('/api/v1/product/product-category/electronics');
+        expect(mockedAxios.get).toHaveBeenCalledWith("/api/v1/product/product-category/electronics");
       });
     });
 
-    test('does not call API when slug is not provided', () => {
+    test("does not call API when slug is not provided", () => {
       mockUseParams.mockResolvedValueOnce({});
       
       render(
@@ -209,9 +209,9 @@ describe('CategoryProduct Component', () => {
       expect(mockedAxios.get).not.toHaveBeenCalled();
     });
 
-    test('handles API errors gracefully', async () => {
-      const consoleLogSpy = jest.spyOn(console, 'error').mockImplementation();
-      mockedAxios.get.mockRejectedValue(new Error('API Error'));
+    test("handles API errors gracefully", async () => {
+      const consoleLogSpy = jest.spyOn(console, "error").mockImplementation();
+      mockedAxios.get.mockRejectedValue(new Error("API Error"));
 
       render(
         <TestWrapper>
@@ -227,8 +227,8 @@ describe('CategoryProduct Component', () => {
     });
   });
 
-  describe('Navigation', () => {
-    test('navigates to product detail page when More Details button is clicked', async () => {
+  describe("Navigation", () => {
+    test("navigates to product detail page when More Details button is clicked", async () => {
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -237,13 +237,13 @@ describe('CategoryProduct Component', () => {
         </TestWrapper>
       );
 
-      const moreDetailsButtons = await screen.findAllByText('More Details');
+      const moreDetailsButtons = await screen.findAllByText("More Details");
       fireEvent.click(moreDetailsButtons[0]);
 
-      expect(mockNavigate).toHaveBeenCalledWith('/product/laptop');
+      expect(mockNavigate).toHaveBeenCalledWith("/product/laptop");
     });
 
-    test('navigates correctly for multiple products', async () => {
+    test("navigates correctly for multiple products", async () => {
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -252,13 +252,13 @@ describe('CategoryProduct Component', () => {
         </TestWrapper>
       );
 
-      const moreDetailsButtons = await screen.findAllByText('More Details');
+      const moreDetailsButtons = await screen.findAllByText("More Details");
 
       fireEvent.click(moreDetailsButtons[1]);
-      expect(mockNavigate).toHaveBeenCalledWith('/product/smartphone');
+      expect(mockNavigate).toHaveBeenCalledWith("/product/smartphone");
 
       fireEvent.click(moreDetailsButtons[0]);
-      expect(mockNavigate).toHaveBeenCalledWith('/product/laptop');
+      expect(mockNavigate).toHaveBeenCalledWith("/product/laptop");
     });
   });
 });
