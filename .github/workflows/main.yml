@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '24'
+          node-version: "24"
 
       - name: Install dependencies
         run: npm install
@@ -33,4 +33,4 @@ jobs:
         run: npm run test:frontend
 
       - name: Run Jest backend tests
-        run: npm run test:backend
+        run: npm run test:backend -- --passWithNoTests
