@@ -10,9 +10,9 @@ const CategoryProduct = () => {
   const [category, setCategory] = useState([]);
 
   useEffect(() => {
-    if (params?.slug) getPrductsByCat();
+    if (params?.slug) getProductsByCat();
   }, [params?.slug]);
-  const getPrductsByCat = async () => {
+  const getProductsByCat = async () => {
     try {
       const { data } = await axios.get(
         `/api/v1/product/product-category/${params.slug}`
@@ -49,8 +49,10 @@ const CategoryProduct = () => {
                         })}
                       </h5>
                     </div>
-                    <p className="card-text ">
-                      {p.description.substring(0, 60)}...
+                    <p className="card-text">
+                      {p.description.length > 60
+                        ? `${p.description.substring(0, 60)}...`
+                        : p.description}
                     </p>
                     <div className="card-name-price">
                       <button
