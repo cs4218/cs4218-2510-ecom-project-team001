@@ -194,7 +194,7 @@ describe('ProductDetails Component', () => {
   });
 
   test('handles API errors gracefully', async () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockedAxios.get.mockRejectedValue(new Error('API Error'));
 
     render(

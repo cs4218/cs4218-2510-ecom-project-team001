@@ -26,7 +26,7 @@ const ProductDetails = () => {
       setProduct(data?.product);
       getSimilarProduct(data?.product._id, data?.product.category._id);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
   //get similar product
