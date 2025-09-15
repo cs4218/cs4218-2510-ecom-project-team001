@@ -33,4 +33,4 @@ jobs:
         run: npm run test:frontend
 
       - name: Run Jest backend tests
-        run: npm run test:backend -- --passWithNoTests
+        run: npm run test:backend

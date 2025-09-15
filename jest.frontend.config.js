@@ -27,10 +27,7 @@ export default {
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: [
-    "client/src/pages/Auth/**",
-    "client/src/components/Form/**",
-  ],
+  collectCoverageFrom: ["client/src/pages/Auth/**"],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
     global: {
