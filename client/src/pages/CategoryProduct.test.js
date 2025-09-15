@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useParams } from 'react-router-dom';
 import axios from 'axios';
 import CategoryProduct from './CategoryProduct';
 
@@ -12,16 +12,16 @@ jest.mock('../components/Layout', () => {
   };
 });
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useParams: jest.fn(),
-  useNavigate: jest.fn(),
-}));
-
 const mockedAxios = axios;
 const mockNavigate = jest.fn();
-const mockUseParams = require('react-router-dom').useParams;
-const mockUseNavigate = require('react-router-dom').useNavigate;
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useParams: jest.fn(() => ({ slug: 'electronics' })),
+  useNavigate: () => mockNavigate,
+}));
+
+const mockUseParams = jest.mocked(useParams);
 
 // Test wrapper component
 const TestWrapper = ({ children }) => (
@@ -31,7 +31,6 @@ const TestWrapper = ({ children }) => (
 describe('CategoryProduct Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseNavigate.mockReturnValue(mockNavigate);
   });
 
   const mockCategoryData = {
@@ -60,7 +59,6 @@ describe('CategoryProduct Component', () => {
 
   describe('Component Rendering', () => {
     test('renders loading state initially', () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       render(
@@ -73,7 +71,6 @@ describe('CategoryProduct Component', () => {
     });
 
     test('renders category name and product count after loading', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -87,7 +84,6 @@ describe('CategoryProduct Component', () => {
     });
 
     test('renders products correctly', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -108,7 +104,7 @@ describe('CategoryProduct Component', () => {
     });
 
     test('does not crash when category is not found', async () => {
-      mockUseParams.mockReturnValue({ slug: 'nonexistent' });
+      mockUseParams.mockResolvedValueOnce({slug: "non-exists"});
       mockedAxios.get.mockResolvedValue({ data: 
         {
           category: null,
@@ -126,7 +122,6 @@ describe('CategoryProduct Component', () => {
     });
 
     test('handles empty products array', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockResolvedValue({ 
         data: { 
           category: { name: 'Electronics' }, 
@@ -147,7 +142,6 @@ describe('CategoryProduct Component', () => {
     });
 
     test('truncates product descriptions correctly', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -171,7 +165,6 @@ describe('CategoryProduct Component', () => {
     });
 
     test('renders product images with correct src and alt attributes', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -191,7 +184,6 @@ describe('CategoryProduct Component', () => {
 
   describe('API Integration', () => {
     test('calls API with correct slug parameter', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -206,7 +198,7 @@ describe('CategoryProduct Component', () => {
     });
 
     test('does not call API when slug is not provided', () => {
-      mockUseParams.mockReturnValue({});
+      mockUseParams.mockResolvedValueOnce({});
       
       render(
         <TestWrapper>
@@ -218,7 +210,6 @@ describe('CategoryProduct Component', () => {
     });
 
     test('handles API errors gracefully', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       mockedAxios.get.mockRejectedValue(new Error('API Error'));
 
@@ -238,7 +229,6 @@ describe('CategoryProduct Component', () => {
 
   describe('Navigation', () => {
     test('navigates to product detail page when More Details button is clicked', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(
@@ -254,7 +244,6 @@ describe('CategoryProduct Component', () => {
     });
 
     test('navigates correctly for multiple products', async () => {
-      mockUseParams.mockReturnValue({ slug: 'electronics' });
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
       render(

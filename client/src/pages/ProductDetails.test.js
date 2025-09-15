@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter, useParams } from 'react-router-dom';
 import ProductDetails from './ProductDetails';
 import axios from 'axios';
@@ -235,7 +235,7 @@ describe('ProductDetails Component', () => {
     const moreDetailsButtons = await screen.findAllByText('More Details');
     expect(moreDetailsButtons).toHaveLength(2);
 
-    moreDetailsButtons[0].click();
+    fireEvent.click(moreDetailsButtons[0]);
 
     expect(mockNavigate).toHaveBeenCalledWith('/product/related-product-1');
   });
@@ -341,7 +341,7 @@ describe('ProductDetails Component', () => {
 
     // Click the ADD TO CART button
     const addToCartButton = screen.getByText('ADD TO CART');
-    addToCartButton.click();
+    fireEvent.click(addToCartButton);
 
     // Verify that the item was added to cart state
     expect(mockSetCart).toHaveBeenCalledWith([mockProduct]);
@@ -393,7 +393,7 @@ describe('ProductDetails Component', () => {
 
     // Click the ADD TO CART button
     const addToCartButton = screen.getByText('ADD TO CART');
-    addToCartButton.click();
+    fireEvent.click(addToCartButton);
 
     // Verify that the item was added to cart state
     expect(mockSetCart).toHaveBeenCalledWith([mockExistingProduct, mockProduct]);
