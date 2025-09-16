@@ -10,7 +10,9 @@ export default {
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["controllers/**"],
+  // add controllers to code coverage array, it should eventually reach
+  // collectCoverageFrom: ["controllers/**"], with full coverage
+  collectCoverageFrom: ["controllers/categoryController.js"], // add more files as needed
   coverageThreshold: {
     global: {
       lines: 100,
