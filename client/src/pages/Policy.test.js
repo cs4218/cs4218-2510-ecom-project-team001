@@ -19,14 +19,11 @@ describe('Policy Component', () => {
     jest.clearAllMocks();
   });
 
-  test('renders without crashing', () => {
-    render(<Policy />);
-  });
-
   test('renders Layout with correct title', () => {
+    // Act
     render(<Policy />);
     
-    // Check if Layout was called with correct props
+    // Assert
     expect(Layout).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Privacy Policy'
@@ -36,15 +33,19 @@ describe('Policy Component', () => {
   });
 
   test('renders the main container with correct CSS class', () => {
+    // Act
     render(<Policy />);
     
+    // Assert
     const mainContainer = screen.getByTestId('privacy-policy-main-container')
     expect(mainContainer).toBeInTheDocument();
   });
 
   test('renders the contact image with correct attributes', () => {
+    // Act
     render(<Policy />);
     
+    // Assert
     const image = screen.getByAltText('contactus');
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute('src', '/images/contactus.jpeg');
@@ -53,15 +54,19 @@ describe('Policy Component', () => {
   });
 
   test('renders the image', () => {
+    // Act
     render(<Policy />);
     
+    // Assert
     const image = screen.getByAltText('contactus');
     expect(image).toBeInTheDocument();
   });
 
   test('renders the content containers with correct CSS class', () => {
+    // Act
     render(<Policy />);
     
+    // Assert
     const contentContainers = screen.getAllByText('add privacy policy');
   
     expect(contentContainers).toHaveLength(7);
@@ -74,8 +79,10 @@ describe('Policy Component', () => {
   });
 
   test('renders policy page with expected content and structure', () => {
+    // Act
     render(<Policy />);
     
+    // Assert
     const image = screen.getByRole('img');
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute('src');

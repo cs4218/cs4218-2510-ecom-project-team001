@@ -22,6 +22,7 @@ export default {
   // only run these tests
   testMatch: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
+    "<rootDir>/client/src/components/Form/*.test.js",
     "<rootDir>/client/src/pages/Policy.test.js"
   ],
 
@@ -29,6 +30,7 @@ export default {
   collectCoverage: true,
   collectCoverageFrom: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
+    "<rootDir>/client/src/components/Form/*.test.js",
     "<rootDir>/client/src/pages/Policy.test.js"
   ],
   coverageThreshold: {
