@@ -130,7 +130,7 @@ export const productPhotoController = async (req, res) => {
     res.set("Content-type", product.photo.contentType);
     return res.status(200).send(product.photo.data);
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).send({
       success: false,
       message: "Error while getting photo",

@@ -12,7 +12,10 @@ export default {
   collectCoverage: true,
   // add controllers to code coverage array, it should eventually reach
   // collectCoverageFrom: ["controllers/**"], with full coverage
-  collectCoverageFrom: ["controllers/categoryController.js"], // add more files as needed
+  collectCoverageFrom: [
+    "controllers/categoryController.js",
+    "controllers/productController.js"
+  ], // add more files as needed
   coverageThreshold: {
     global: {
       lines: 100,

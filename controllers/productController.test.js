@@ -30,6 +30,7 @@ describe("Product Controller Tests", () => {
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
+    jest.spyOn(console, "log").mockImplementation(() => {});
 
     // Mock request and response objects
     req = {
@@ -98,6 +99,9 @@ describe("Product Controller Tests", () => {
     fs.readFileSync.mockReturnValue(Buffer.from("fake-image-data"));
   });
 
+  afterAll(() => {
+    console.log.mockRestore(); // restore original console.log
+  });
 
   describe("getProductController", () => {
     test("should get all products successfully", async () => {
