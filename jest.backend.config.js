@@ -6,7 +6,10 @@ export default {
   testEnvironment: "node",
 
   // which test to run
-  testMatch: ["<rootDir>/controllers/*.test.js"],
+  testMatch: [
+    "<rootDir>/controllers/*.test.js",
+    "<rootDir>/models/*.test.js"
+  ],
 
   // jest code coverage
   collectCoverage: true,
@@ -14,7 +17,8 @@ export default {
   // collectCoverageFrom: ["controllers/**"], with full coverage
   collectCoverageFrom: [
     "controllers/categoryController.js",
-    "controllers/productController.js"
+    "controllers/productController.js",
+    "models/**"
   ], // add more files as needed
   coverageThreshold: {
     global: {
