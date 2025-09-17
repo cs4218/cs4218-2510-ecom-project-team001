@@ -72,6 +72,7 @@ const RouterWrapper = ({ children }) => (
   <BrowserRouter>{children}</BrowserRouter>
 );
 
+// General structure is generated with the help of AI. More test cases were added as needed.
 describe("ProductDetails Component", () => {
   const mockCart = [];
   const mockSetCart = jest.fn();
@@ -96,7 +97,7 @@ describe("ProductDetails Component", () => {
   });
 
   test("renders product details correctly when data is loaded", async () => {
-    // Mock successful API responses
+    // Arrange
     mockedAxios.get
       .mockResolvedValueOnce({
         data: { product: mockProduct }
@@ -105,13 +106,14 @@ describe("ProductDetails Component", () => {
         data: { products: mockRelatedProducts }
       });
 
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
-    // Wait for product data to load
+    // Assert
     expect(await screen.findByText("Product Details")).toBeInTheDocument();
     expect(await screen.findByText("Name : Test Product")).toBeInTheDocument();
     expect(await screen.findByText("Description : This is a test product description")).toBeInTheDocument();
@@ -120,6 +122,7 @@ describe("ProductDetails Component", () => {
   });
 
   test("makes correct API calls on component mount", async () => {
+    // Arrange
     mockedAxios.get
       .mockResolvedValueOnce({
         data: { product: mockProduct }
@@ -128,12 +131,14 @@ describe("ProductDetails Component", () => {
         data: { products: mockRelatedProducts }
       });
 
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
+    // Assert
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledTimes(2);
     });
@@ -144,6 +149,7 @@ describe("ProductDetails Component", () => {
   });
 
   test("displays related products correctly", async () => {
+    // Arrange
     mockedAxios.get
       .mockResolvedValueOnce({
         data: { product: mockProduct }
@@ -151,29 +157,24 @@ describe("ProductDetails Component", () => {
       .mockResolvedValueOnce({
         data: { products: mockRelatedProducts }
       });
-
+    // Act  
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText("Similar Products ➡️")).toBeInTheDocument();
-    });
-
-    // Check related products
+    // Assert
+    expect(screen.getByText("Similar Products ➡️")).toBeInTheDocument();
     expect(await screen.findByText("Related Product 1")).toBeInTheDocument();
     expect(await screen.findByText("Related Product 2")).toBeInTheDocument();
     expect(await screen.findByText("$19.99")).toBeInTheDocument();
     expect(await screen.findByText("$39.99")).toBeInTheDocument();
-
-    // Check truncated description
     expect(await screen.findByText("This is a related product with a long description that shoul...")).toBeInTheDocument();
   });
 
-
   test("displays 'No Similar Products found' when no related products", async () => {
+    // Arrange
     mockedAxios.get
       .mockResolvedValueOnce({
         data: { product: mockProduct }
@@ -181,27 +182,31 @@ describe("ProductDetails Component", () => {
       .mockResolvedValueOnce({
         data: { products: [] }
       });
-
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
+    // Assert
     expect(await screen.findByText("No Similar Products found")).toBeInTheDocument();
     
   });
 
   test("handles API errors gracefully", async () => {
+    // Arrange
     const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     mockedAxios.get.mockRejectedValue(new Error("API Error"));
 
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
+    // Assert
     await waitFor(() => {
       expect(consoleSpy).toHaveBeenCalledWith(new Error("API Error"));
     });
@@ -212,20 +217,22 @@ describe("ProductDetails Component", () => {
   });
 
   test("navigates to product details when 'More Details' button is clicked", async () => {
+    // Arrange
     mockedAxios.get
       .mockResolvedValueOnce({
         data: { product: mockProduct }
       })
       .mockResolvedValueOnce({
         data: { products: mockRelatedProducts }
-      });
-
+      });  
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
+    // Assert
     await waitFor(() => {
       expect(screen.getByText("Similar Products ➡️")).toBeInTheDocument();
     });
@@ -240,6 +247,7 @@ describe("ProductDetails Component", () => {
   });
 
   test("renders product image with correct src and alt attributes", async () => {
+    // Arrange
     mockedAxios.get
       .mockResolvedValueOnce({
         data: { product: mockProduct }
@@ -247,15 +255,15 @@ describe("ProductDetails Component", () => {
       .mockResolvedValueOnce({
         data: { products: mockRelatedProducts }
       });
-
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
+    // Assert
     const productImage = await screen.findByAltText("Test Product");
-
     expect(productImage).toBeInTheDocument();
     expect(productImage).toHaveAttribute(
       "src",
@@ -263,39 +271,46 @@ describe("ProductDetails Component", () => {
     );
   });
 
-  test("does not fetch product and navigates to 404 page if no slug in params", () => {
+  test("does not fetch product if no slug in params", () => {
+    // Arrange
     mockUseParams.mockResolvedValueOnce({});
 
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
+    // Assert
     // Should not make any API calls
     expect(mockedAxios.get).not.toHaveBeenCalled();
   });
 
   test("does not crash if no product is found", async () => {
+    // Arrange
     mockedAxios.get
-            .mockResolvedValueOnce({
-                data: { product: null }
-            })
-            .mockResolvedValueOnce({
-                data: { products: [] }
-            });
+      .mockResolvedValueOnce({
+        data: { product: null }
+      })
+      .mockResolvedValueOnce({
+        data: { products: [] }
+      });
 
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
+    // Assert
     // Does not crash
     expect(await screen.findByText("Product Details")).toBeInTheDocument();
   });
 
   test("renders ADD TO CART button", async () => {
+    // Arrange
     mockedAxios.get
       .mockResolvedValueOnce({
         data: { product: mockProduct }
@@ -304,12 +319,14 @@ describe("ProductDetails Component", () => {
         data: { products: [] }
       });
 
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
+    // Assert
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "ADD TO CART" })).toBeInTheDocument();
     });
@@ -317,6 +334,7 @@ describe("ProductDetails Component", () => {
 
 
   test("renders ADD TO CART button and adds item to localStorage when clicked", async () => {
+    // Arrange
     Object.defineProperty(window, "localStorage", {
       value: localStorageMock,
     });
@@ -329,33 +347,31 @@ describe("ProductDetails Component", () => {
         data: { products: [] }
       });
 
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
-    // Wait for product details to be rendered
     await screen.findByText("Name : Test Product");
 
-    // Click the ADD TO CART button
     const addToCartButton = screen.getByText("ADD TO CART");
     fireEvent.click(addToCartButton);
 
-    // Verify that the item was added to cart state
+    // Assert
     expect(mockSetCart).toHaveBeenCalledWith([mockProduct]);
     
-    // Verify that localStorage was updated with the cart item
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       "cart",
       JSON.stringify([mockProduct])
     );
 
-    // Verify that success toast was shown
     expect(mockedToast.success).toHaveBeenCalledWith("Item Added to cart");
   });
 
   test("handles ADD TO CART button click with existing item in cart", async () => {
+    // Arrange
     Object.defineProperty(window, "localStorage", {
       value: localStorageMock,
     });
@@ -381,29 +397,26 @@ describe("ProductDetails Component", () => {
 
     mockCart.push(mockExistingProduct);
 
+    // Act
     render(
       <RouterWrapper>
         <ProductDetails />
       </RouterWrapper>
     );
 
-    // Wait for product details to be rendered
     await screen.findByText("Name : Test Product");
 
-    // Click the ADD TO CART button
     const addToCartButton = screen.getByText("ADD TO CART");
     fireEvent.click(addToCartButton);
 
-    // Verify that the item was added to cart state
+    // Assert
     expect(mockSetCart).toHaveBeenCalledWith([mockExistingProduct, mockProduct]);
-    
-    // Verify that localStorage was updated with the cart item
+
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       "cart",
       JSON.stringify([mockExistingProduct, mockProduct])
     );
 
-    // Verify that success toast was shown
     expect(mockedToast.success).toHaveBeenCalledWith("Item Added to cart");
   });
 });

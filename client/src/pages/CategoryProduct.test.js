@@ -59,39 +59,48 @@ describe("CategoryProduct Component", () => {
 
   describe("Component Rendering", () => {
     test("renders loading state initially", () => {
+      // Arrange
       mockedAxios.get.mockImplementation(() => new Promise(() => {})); // Never resolves
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
+      // Assert
       expect(screen.getByTestId("layout")).toBeInTheDocument();
     });
 
     test("renders category name and product count after loading", async () => {
+      // Arrange
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
+      // Assert
       expect(await screen.findByText("Category - Electronics")).toBeInTheDocument();
       expect(await screen.findByText("2 result found")).toBeInTheDocument();
     });
 
     test("renders products correctly", async () => {
+      // Arrange
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
+      // Assert
       const laptop = await screen.findByText("Laptop");
       const smartphone = await screen.findByText("Smartphone");
       const laptopPrice = await screen.findByText("$999.99");
@@ -104,6 +113,7 @@ describe("CategoryProduct Component", () => {
     });
 
     test("does not crash when category is not found", async () => {
+      // Arrange
       mockUseParams.mockResolvedValueOnce({slug: "non-exists"});
       mockedAxios.get.mockResolvedValue({ data: 
         {
@@ -112,16 +122,19 @@ describe("CategoryProduct Component", () => {
         }
       });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
+      // Assert
       expect(await screen.findByText("Category -")).toBeInTheDocument();
     });
 
     test("handles empty products array", async () => {
+      // Arrange
       mockedAxios.get.mockResolvedValue({ 
         data: { 
           category: { name: "Electronics" }, 
@@ -129,27 +142,30 @@ describe("CategoryProduct Component", () => {
         } 
       });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
-      await waitFor(() => {
-        expect(screen.getByText("Category - Electronics")).toBeInTheDocument();
-      });
-      expect(screen.getByText("0 result found")).toBeInTheDocument();
+      // Assert
+      expect(await screen.findByText("Category - Electronics")).toBeInTheDocument();
+      expect(await screen.findByText("0 result found")).toBeInTheDocument();
     });
 
     test("truncates product descriptions correctly", async () => {
+      // Arrange
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
+      // Assert
       // This is > 60 chars
       const laptopText = await screen.findByText(
        "High performance laptop with excellent features for work and..."
@@ -165,14 +181,17 @@ describe("CategoryProduct Component", () => {
     });
 
     test("renders product images with correct src and alt attributes", async () => {
+      // Arrange
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
       
+      // Assert
       const laptopImage = await screen.findByAltText("Laptop");
       const smartphoneImage = await screen.findByAltText("Smartphone");
         
@@ -184,41 +203,50 @@ describe("CategoryProduct Component", () => {
 
   describe("API Integration", () => {
     test("calls API with correct slug parameter", async () => {
+      // Arrange
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
+      // Assert
       await waitFor(() => {
         expect(mockedAxios.get).toHaveBeenCalledWith("/api/v1/product/product-category/electronics");
       });
     });
 
     test("does not call API when slug is not provided", () => {
+      // Arrange
       mockUseParams.mockResolvedValueOnce({});
       
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
+      // Assert
       expect(mockedAxios.get).not.toHaveBeenCalled();
     });
 
     test("handles API errors gracefully", async () => {
+      // Arrange
       const consoleLogSpy = jest.spyOn(console, "error").mockImplementation();
       mockedAxios.get.mockRejectedValue(new Error("API Error"));
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
         </TestWrapper>
       );
 
+      // Assert
       await waitFor(() => {
         expect(consoleLogSpy).toHaveBeenCalledWith(expect.any(Error));
       });
@@ -229,8 +257,10 @@ describe("CategoryProduct Component", () => {
 
   describe("Navigation", () => {
     test("navigates to product detail page when More Details button is clicked", async () => {
+      // Arrange
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
@@ -238,14 +268,17 @@ describe("CategoryProduct Component", () => {
       );
 
       const moreDetailsButtons = await screen.findAllByText("More Details");
-      fireEvent.click(moreDetailsButtons[0]);
 
+      // Act + Assert
+      fireEvent.click(moreDetailsButtons[0]);
       expect(mockNavigate).toHaveBeenCalledWith("/product/laptop");
     });
 
     test("navigates correctly for multiple products", async () => {
+      // Arrange
       mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
 
+      // Act
       render(
         <TestWrapper>
           <CategoryProduct />
@@ -254,9 +287,11 @@ describe("CategoryProduct Component", () => {
 
       const moreDetailsButtons = await screen.findAllByText("More Details");
 
+      // Act + Assert
       fireEvent.click(moreDetailsButtons[1]);
       expect(mockNavigate).toHaveBeenCalledWith("/product/smartphone");
 
+      // Act + Assert
       fireEvent.click(moreDetailsButtons[0]);
       expect(mockNavigate).toHaveBeenCalledWith("/product/laptop");
     });
