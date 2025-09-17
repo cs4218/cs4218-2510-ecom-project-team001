@@ -13,6 +13,7 @@ jest.mock('../components/Layout', () => {
   ));
 });
 
+// General structure is generated with help from AI
 describe('Policy Component', () => {
   beforeEach(() => {
     // Clear all mocks before each test
