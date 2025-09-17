@@ -41,4 +41,10 @@ export default {
     },
   },
   setupFilesAfterEnv: ["<rootDir>/client/src/setupTests.js"],
+
+  // more detailed output
+  verbose: true,
+  reporters: ["default"],
+  silent: false,
+  testLocationInResults: true,
 };
