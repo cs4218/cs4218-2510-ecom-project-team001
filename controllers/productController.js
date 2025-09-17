@@ -211,6 +211,15 @@ export const productFiltersController = async (req, res) => {
   try {
     const { checked, radio } = req.body;
     let args = {};
+
+    if (!Array.isArray(checked) || !Array.isArray(radio) || (radio.length !== 0 && radio.length !== 2)) {
+      return res.status(400).send({
+        success: false,
+        error: new Error("Invalid filter"),
+        message: "Invalid filter",
+      });
+    }
+
     if (checked.length > 0) args.category = checked;
     if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
     const products = await productModel.find(args);
@@ -220,7 +229,7 @@ export const productFiltersController = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(400).send({
+    res.status(500).send({
       success: false,
       message: "Error while filtering products",
       error,
@@ -238,7 +247,7 @@ export const productCountController = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(400).send({
+    res.status(500).send({
       message: "Error in product count",
       error,
       success: false,
@@ -263,7 +272,7 @@ export const productListController = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(400).send({
+    res.status(500).send({
       success: false,
       message: "Error in per page control",
       error,
@@ -275,6 +284,13 @@ export const productListController = async (req, res) => {
 export const searchProductController = async (req, res) => {
   try {
     const { keyword } = req.params;
+    if (!keyword) {
+      return res.status(400).send({
+        success: false,
+        error: new Error("Keyword is required"),
+        message: "Keyword is required",
+      });
+    }
     const results = await productModel
       .find({
         $or: [
@@ -286,7 +302,7 @@ export const searchProductController = async (req, res) => {
     res.json(results);
   } catch (error) {
     console.log(error);
-    res.status(400).send({
+    res.status(500).send({
       success: false,
       message: "Error in Search Product API",
       error,
@@ -298,6 +314,13 @@ export const searchProductController = async (req, res) => {
 export const realtedProductController = async (req, res) => {
   try {
     const { pid, cid } = req.params;
+    if (!pid || !cid) {
+      return res.status(400).send({
+        success: false,
+        error: new Error("Product id and category id are required"),
+        message: "Product id and category id are required",
+      });
+    }
     const products = await productModel
       .find({
         category: cid,
@@ -312,7 +335,7 @@ export const realtedProductController = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(400).send({
+    res.status(500).send({
       success: false,
       message: "Error while getting related products",
       error,
@@ -323,6 +346,13 @@ export const realtedProductController = async (req, res) => {
 // get product by catgory
 export const productCategoryController = async (req, res) => {
   try {
+    if (!req.params.slug) {
+      return res.status(400).send({ 
+        success: false,
+        error: new Error("Category slug is required"),
+        message: "Category slug is required",
+      });
+    }
     const category = await categoryModel.findOne({ slug: req.params.slug });
     const products = await productModel.find({ category }).populate("category");
     res.status(200).send({
@@ -332,7 +362,7 @@ export const productCategoryController = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(400).send({
+    res.status(500).send({
       success: false,
       error,
       message: "Error while getting products",
