@@ -23,7 +23,9 @@ export default {
   testMatch: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
-    "<rootDir>/client/src/pages/Policy.test.js"
+    "<rootDir>/client/src/pages/Policy.test.js",
+    "<rootDir>/client/src/pages/CategoryProduct.test.js",
+    "<rootDir>/client/src/pages/ProductDetails.test.js"
   ],
 
   // jest code coverage
@@ -31,7 +33,9 @@ export default {
   collectCoverageFrom: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
-    "<rootDir>/client/src/pages/Policy.test.js"
+    "<rootDir>/client/src/pages/Policy.test.js",
+    "<rootDir>/client/src/pages/CategoryProduct.test.js",
+    "<rootDir>/client/src/pages/ProductDetails.test.js"
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
