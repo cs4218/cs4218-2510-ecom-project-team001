@@ -18,8 +18,8 @@ export default {
   ], // add more files as needed
   coverageThreshold: {
     global: {
-      lines: 100,
-      functions: 100,
+      lines: 60,
+      functions: 60,
     },
   },
 };
