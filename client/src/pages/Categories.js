@@ -15,6 +15,7 @@ const Categories = () => {
               </Link>
             </div>
           ))}
+          {!categories.length && <h4>No categories found</h4>}
         </div>
       </div>
     </Layout>

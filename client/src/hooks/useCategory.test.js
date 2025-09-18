@@ -12,6 +12,7 @@ describe("useCategory tests", () => {
     test("should return empty array if no categories present", () => {
         // Act, Assert
         const { result } = renderHook(() => useCategory());
+        expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
         expect(result.current).toEqual([]);
     })
 

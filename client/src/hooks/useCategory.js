@@ -7,12 +7,12 @@ export default function useCategory() {
   //get cat
   const getCategories = async () => {
     try {
-      const { data } = await axios.get("/api/v1/category/get-category");
-      if (data?.success) {
-        setCategories(data?.category);
-      } else {
+      const res = await axios.get("/api/v1/category/get-category");
+      const data = res?.data;
+      if (!data?.success) {
         throw new Error("Failed to fetch categories");
       }
+      setCategories(data?.category);
     } catch (error) {
       console.log(error);
     }
