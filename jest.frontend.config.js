@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   // name displayed during tests
   displayName: "frontend",
 
@@ -25,7 +25,9 @@ export default {
     "<rootDir>/client/src/components/Form/*.test.js",
     "<rootDir>/client/src/pages/Policy.test.js",
     "<rootDir>/client/src/pages/CategoryProduct.test.js",
-    "<rootDir>/client/src/pages/ProductDetails.test.js"
+    "<rootDir>/client/src/pages/ProductDetails.test.js",
+    "<rootDir>/client/src/hooks/useCategory.test.js",
+    "<rootDir>/client/src/pages/Categories.test.js"
   ],
 
   // jest code coverage
@@ -35,7 +37,9 @@ export default {
     "<rootDir>/client/src/components/Form/*.test.js",
     "<rootDir>/client/src/pages/Policy.test.js",
     "<rootDir>/client/src/pages/CategoryProduct.test.js",
-    "<rootDir>/client/src/pages/ProductDetails.test.js"
+    "<rootDir>/client/src/pages/ProductDetails.test.js",
+    "<rootDir>/client/src/hooks/useCategory.js",
+    "<rootDir>/client/src/pages/Categories.js"
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
