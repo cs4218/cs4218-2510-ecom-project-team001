@@ -93,7 +93,7 @@ describe("categoryController", () => {
       );
     });
 
-    test("returns 200 ok when category already exists", async () => {
+    test("returns 409 Conflict when category already exists", async () => {
       // Arrange
       categoryModel.findOne.mockResolvedValue({
         _id: RANDOM_OBJECT_ID,
@@ -107,10 +107,10 @@ describe("categoryController", () => {
 
       // Assert
       expect(categoryModel.findOne).toHaveBeenCalledWith({ name: "Books" });
-      expect(mockedRes.status).toHaveBeenCalledWith(200);
+      expect(mockedRes.status).toHaveBeenCalledWith(409);
       expect(mockedRes.send).toHaveBeenCalledWith(
         expect.objectContaining({
-          success: true,
+          success: false,
           message: "Category Already Exists",
         })
       );
@@ -131,6 +131,25 @@ describe("categoryController", () => {
       expect(mockedRes.status).toHaveBeenCalledWith(500);
       // send called with error object as part of response
       expect(mockedRes.send).toHaveBeenCalled();
+    });
+
+    test("on submit duplicate category, return a conflict response (code 409)", async () => {
+      // Arrange
+      categoryModel.findOne.mockResolvedValue({ name: "Books" });
+      const req = { body: { name: "Books" } };
+
+      // Act
+      await createCategoryController(req, mockedRes);
+
+      // Assert
+      expect(categoryModel.findOne).toHaveBeenCalledWith({ name: "Books" });
+      expect(mockedRes.status).toHaveBeenCalledWith(409);
+      expect(mockedRes.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Category Already Exists",
+        })
+      );
     });
   });
 
