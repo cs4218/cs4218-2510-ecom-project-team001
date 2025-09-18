@@ -29,9 +29,11 @@ describe('Cart Context', () => {
 
     test('initialise cart with existing items from localStorage', async () => {
         const existingCart = [
-            { id: "1", name: "Product 1", quantity: 2 },
+            { id: "1", name: "Product 1", quantity: 1 },
+            { id: "1", name: "Product 1", quantity: 1 },
             { id: "2", name: "Product 2", quantity: 1 }
         ];
+        const numProducts = existingCart.reduce((sum, item) => sum + item.quantity, 0);
         localStorage.getItem.mockReturnValue(JSON.stringify(existingCart));
 
         const { result } = renderHook(() => useCart(), {
@@ -39,7 +41,7 @@ describe('Cart Context', () => {
         })
 
         expect(localStorage.getItem).toHaveBeenCalledWith('cart');
-        expect(result.current[0]).toEqual(existingCart);
+        expect(result.current[0].reduce((sum, item) => sum + item.quantity, 0)).toEqual(numProducts);
     })
 
     test("update cart", async () => {

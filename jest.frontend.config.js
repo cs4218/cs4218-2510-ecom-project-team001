@@ -23,13 +23,15 @@ export default {
   testMatch: [
     //"<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/context/cart.test.js",
+    "<rootDir>/client/src/pages/CartPage.test.js",
   ],
 
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
     //"client/src/pages/Auth/**", 
-    "client/src/context/cart.js"
+    "client/src/context/cart.js",
+    "client/src/pages/CartPage.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
