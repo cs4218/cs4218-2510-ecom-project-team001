@@ -26,4 +26,6 @@ export default {
       functions: 60,
     },
   },
+
+  silent: true,
 };
