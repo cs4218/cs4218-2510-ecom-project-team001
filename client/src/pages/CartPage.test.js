@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import axios from "axios";
@@ -56,7 +56,10 @@ jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// ---------- helper ----------
+// Render cart page
+const { act: domAct } = require("react-dom/test-utils");
+const act = React.act || domAct;
+
 const renderCartPage = async (cart = [], user = null) => {
   jest.clearAllMocks();
 
