@@ -8,6 +8,8 @@ import {
   searchProductController,
   realtedProductController,
   productCategoryController,
+  braintreeTokenController,
+  brainTreePaymentController
 } from '../controllers/productController.js';
 
 // Mock all dependencies
@@ -16,21 +18,46 @@ jest.mock('../models/categoryModel.js');
 jest.mock('../models/orderModel.js');
 jest.mock('fs');
 jest.mock('slugify');
-jest.mock('braintree');
+jest.mock('braintree', () => ({
+  BraintreeGateway: jest.fn(() => {
+    return {
+      clientToken: {
+        generate: jest.fn()
+      },
+      transaction: {
+        sale: jest.fn()
+      }
+    }
+  }),
+  Environment: {
+    Sandbox: 'Sandbox',
+  }
+}))
+const gatewayMock = braintree.BraintreeGateway.mock.results[0].value;
+const makeRes = () => {
+  const res = {};
+  res.status = jest.fn(() => res);
+  res.send   = jest.fn(() => res);
+  res.json   = jest.fn(() => res);
+  res.set    = jest.fn(() => res);
+  return res;
+};
 
 import productModel from '../models/productModel.js';
 import categoryModel from '../models/categoryModel.js';
 import fs from 'fs';
 import slugify from 'slugify';
+import braintree from "braintree";
+import orderModel from '../models/orderModel.js';
 
 // General structure generated with the help of AI
 describe("Product Controller Tests", () => {
-  let req, res, mockProduct, mockCategory;
+  let req, res, mockProduct, mockCategory, consoleSpy;
 
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
-    jest.spyOn(console, "log").mockImplementation(() => {});
+    consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
 
     // Mock request and response objects
     req = {
@@ -100,7 +127,7 @@ describe("Product Controller Tests", () => {
   });
 
   afterAll(() => {
-    console.log.mockRestore(); // restore original console.log
+    consoleSpy.mockRestore(); // restore original console.log
   });
 
   describe("getProductController", () => {
@@ -753,6 +780,188 @@ describe("Product Controller Tests", () => {
         message: "Error while getting products",
         error,
       });
+    });
+  });
+
+  describe('braintreeTokenController', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test('should return token successfully', async () => {
+      // Arrange
+      const req = {};
+      const res = makeRes();
+      const fakeResponse = { clientToken: 'abc123' };
+      gatewayMock.clientToken.generate.mockImplementationOnce((_, callback) => callback(null, fakeResponse));
+
+      // Act
+      await braintreeTokenController(req, res);
+
+      // Assert
+      expect(gatewayMock.clientToken.generate).toHaveBeenCalled();
+      expect(res.send).toHaveBeenCalledWith(fakeResponse);
+    });
+
+    test('should return 500 on error', async () => {
+      // Arrange
+      const req = {};
+      const res = makeRes();
+      const error = new Error('Error getting token');
+      gatewayMock.clientToken.generate.mockImplementationOnce((_, callback) => callback(error, null));
+
+      // Act
+      await braintreeTokenController(req, res);
+
+      // Assert
+      expect(gatewayMock.clientToken.generate).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(error);
+    });
+
+    test('should log error on console', async () => {
+      // Arrange
+      const req = {};
+      const res = makeRes();
+      const error = new Error('Error getting token');
+      gatewayMock.clientToken.generate.mockImplementation((_, callback) => { throw error; });
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementationOnce(() => {});
+
+      // Act
+      await braintreeTokenController(req, res);
+
+      // Assert
+      expect(consoleSpy).toHaveBeenCalledWith(error);
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('brainTreePaymentController', () => {
+    let request;
+    let mockProduct = {
+      _id: "product-id",
+      name: "Test Product",
+      description: "Test Description",
+      price: 100,
+      category: "category-id",
+      quantity: 10,
+      photo: {
+        data: Buffer.from("fake-image-data"),
+        contentType: "image/jpeg",
+      },
+      save: jest.fn().mockResolvedValue(true),
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      request = {
+        body: {
+          nonce: 'fake-nonce',
+          cart: [mockProduct]
+        },
+        user: { _id: 'user-id' }
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test('should make payment successfully and create new order', async () => {
+      // Arrange
+      const res = makeRes();
+      gatewayMock.transaction.sale.mockImplementation((_, callback) => callback(null, { success: true }));
+      orderModel.mockImplementation(() => ({
+        save: jest.fn().mockResolvedValue(true)
+      }));
+
+      // Act
+      await brainTreePaymentController(request, res);
+
+      // Assert
+      expect(gatewayMock.transaction.sale).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith({ ok: true });
+      expect(orderModel).toHaveBeenCalledTimes(1);
+      expect(orderModel).toHaveBeenCalledWith({
+        products: request.body.cart,
+        payment: { success: true },
+        buyer: request.user._id,
+      });
+    });
+
+    test('should calculate total correctly', async () => {
+      // Arrange
+      const mockCart = [
+        { _id: 'prod1', price: 100, name: 'Product 1' },
+        { _id: 'prod2', price: 200, name: 'Product 2' }
+      ];
+      request.body.cart = mockCart;
+      const res = makeRes();
+      gatewayMock.transaction.sale.mockImplementation((_, callback) => callback(null, { success: true }));
+      orderModel.mockImplementation(() => ({
+        save: jest.fn().mockResolvedValue(true)
+      }));
+
+      // Act
+      await brainTreePaymentController(request, res);
+
+      // Assert
+      const transactionTotal = gatewayMock.transaction.sale.mock.calls[0][0].amount;
+      expect(transactionTotal).toBe(300);
+      expect(res.json).toHaveBeenCalledWith({ ok: true });
+    });
+
+    test('should return error and not create order on empty cart', async () => {
+      // Arrange
+      request.body.cart = [];
+      const res = makeRes();
+      gatewayMock.transaction.sale.mockImplementation((_, callback) => callback(null, { success: true }));
+      orderModel.mockImplementation(() => ({
+        save: jest.fn().mockResolvedValue(true)
+      }));
+
+      // Act
+      await brainTreePaymentController(request, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith('Cart is empty');
+      expect(orderModel).not.toHaveBeenCalled();
+      expect(gatewayMock.transaction.sale).not.toHaveBeenCalled();
+    });
+
+    test('should return 500 on error', async () => {
+      // Arrange
+      const res = makeRes();
+      const error = new Error('Payment failed');
+      gatewayMock.transaction.sale.mockImplementation((_, callback) => callback(error, null));
+
+      // Act
+      await brainTreePaymentController(request, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(error);
+      expect(orderModel).not.toHaveBeenCalled();
+
+    });
+
+    test('should log error on console', async () => {
+      // Arrange
+      const res = makeRes();
+      const error = new Error('Payment failed');
+      gatewayMock.transaction.sale.mockImplementation(() => { throw error; });
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+
+      // Act
+      await brainTreePaymentController(request, res);
+
+      // Assert
+      expect(consoleSpy).toHaveBeenCalledWith(error);
+      expect(orderModel).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
     });
   });
 });
