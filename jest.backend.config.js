@@ -26,4 +26,6 @@ module.exports = {
       functions: 60,
     },
   },
+
+  silent: true,
 };

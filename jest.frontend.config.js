@@ -22,6 +22,8 @@ module.exports = {
   // only run these tests
   testMatch: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
+    "<rootDir>/client/src/pages/HomePage.test.js",
+    "<rootDir>/client/src/pages/admin/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
     "<rootDir>/client/src/pages/Policy.test.js",
     "<rootDir>/client/src/pages/CategoryProduct.test.js",
@@ -33,6 +35,8 @@ module.exports = {
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
+    "<rootDir>/client/src/pages/Auth/**",
+    "<rootDir>/client/src/pages/HomePage.js"
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
     "<rootDir>/client/src/pages/Policy.test.js",
@@ -40,6 +44,8 @@ module.exports = {
     "<rootDir>/client/src/pages/ProductDetails.test.js",
     "<rootDir>/client/src/context/cart.js",
     "<rootDir>/client/src/pages/CartPage.js",
+    "<rootDir>/client/src/pages/admin/CreateCategory.js",
+    "<rootDir>/client/src/components/Form/CategoryForm.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
