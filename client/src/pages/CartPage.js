@@ -29,10 +29,10 @@ const CartPage = () => {
         currency: "USD",
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
-  //detele item
+  //delete item
   const removeCartItem = (pid) => {
     try {
       let myCart = [...cart];
@@ -41,7 +41,7 @@ const CartPage = () => {
       setCart(myCart);
       localStorage.setItem("cart", JSON.stringify(myCart));
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -51,7 +51,7 @@ const CartPage = () => {
       const { data } = await axios.get("/api/v1/product/braintree/token");
       setClientToken(data?.clientToken);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
   useEffect(() => {
@@ -73,7 +73,7 @@ const CartPage = () => {
       navigate("/dashboard/user/orders");
       toast.success("Payment Completed Successfully ");
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setLoading(false);
     }
   };
@@ -85,13 +85,13 @@ const CartPage = () => {
             <h1 className="text-center bg-light p-2 mb-1">
               {!auth?.user
                 ? "Hello Guest"
-                : `Hello  ${auth?.token && auth?.user?.name}`}
+                : `Hello ${auth?.token && auth?.user?.name}`}
               <p className="text-center">
                 {cart?.length
                   ? `You Have ${cart.length} items in your cart ${
                       auth?.token ? "" : "please login to checkout !"
                     }`
-                  : " Your Cart Is Empty"}
+                  : "Your Cart Is Empty"}
               </p>
             </h1>
           </div>
@@ -112,8 +112,9 @@ const CartPage = () => {
                   </div>
                   <div className="col-md-4">
                     <p>{p.name}</p>
-                    <p>{p.description.substring(0, 30)}</p>
-                    <p>Price : {p.price}</p>
+                    <p>{p.description.split(" ").slice(0, 10).join(" ")}</p>
+                    <p>Price: ${p.price}</p>
+                    <p>Quantity: {p.quantity}</p>
                   </div>
                   <div className="col-md-4 cart-remove-btn">
                     <button
@@ -130,7 +131,7 @@ const CartPage = () => {
               <h2>Cart Summary</h2>
               <p>Total | Checkout | Payment</p>
               <hr />
-              <h4>Total : {totalPrice()} </h4>
+              <h4>Total: {totalPrice()} </h4>
               {auth?.user?.address ? (
                 <>
                   <div className="mb-3">
@@ -162,7 +163,7 @@ const CartPage = () => {
                         })
                       }
                     >
-                      Plase Login to checkout
+                      Please Login to checkout
                     </button>
                   )}
                 </div>
