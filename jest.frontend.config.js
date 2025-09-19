@@ -36,7 +36,7 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: [
     "<rootDir>/client/src/pages/Auth/**",
-    "<rootDir>/client/src/pages/HomePage.js"
+    "<rootDir>/client/src/pages/HomePage.js",
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
     "<rootDir>/client/src/pages/Policy.test.js",
