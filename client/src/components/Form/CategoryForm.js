@@ -8,8 +8,9 @@ const CategoryForm = ({ handleSubmit, value, setValue }) => {
           <input
             type="text"
             className="form-control"
-            placeholder="Enter new category"
+            placeholder="Enter new category (max length=50)"
             value={value}
+            maxLength={50}
             onChange={(e) => setValue(e.target.value)}
           />
         </div>

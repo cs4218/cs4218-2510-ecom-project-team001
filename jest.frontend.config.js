@@ -23,13 +23,26 @@ export default {
   testMatch: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/pages/HomePage.test.js",
+    "<rootDir>/client/src/pages/admin/*.test.js",
+    "<rootDir>/client/src/components/Form/*.test.js",
+    "<rootDir>/client/src/pages/Policy.test.js",
+    "<rootDir>/client/src/pages/CategoryProduct.test.js",
+    "<rootDir>/client/src/pages/ProductDetails.test.js",
   ],
 
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
+    "<rootDir>/client/src/pages/Auth/**",
+    "<rootDir>/client/src/pages/HomePage.js"
+    "<rootDir>/client/src/pages/Auth/*.test.js",
+    "<rootDir>/client/src/components/Form/*.test.js",
+    "<rootDir>/client/src/pages/Policy.test.js",
+    "<rootDir>/client/src/pages/CategoryProduct.test.js",
+    "<rootDir>/client/src/pages/ProductDetails.test.js",
     "client/src/pages/Auth/**",
-    "client/src/pages/HomePage.js"
+    "client/src/pages/admin/CreateCategory.js",
+    "client/src/components/Form/CategoryForm.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
@@ -39,4 +52,10 @@ export default {
     },
   },
   setupFilesAfterEnv: ["<rootDir>/client/src/setupTests.js"],
+
+  // more detailed output
+  verbose: true,
+  reporters: ["default"],
+  silent: false,
+  testLocationInResults: true,
 };
