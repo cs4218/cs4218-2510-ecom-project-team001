@@ -88,7 +88,7 @@ import {
       expect(mockResponse.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Profile Updated SUccessfully",
+          message: "Profile Updated Successfully",
           updatedUser: mockUpdatedUser,
         })
       );
@@ -172,7 +172,7 @@ import {
       expect(mockResponse.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error WHile Update profile",
+          message: "Error While Update profile",
         })
       );
     });
