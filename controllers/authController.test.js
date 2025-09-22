@@ -1,5 +1,7 @@
 import {
     getOrdersController,
+    getAllOrdersController,
+    orderStatusController,
     updateProfileController
   } from "../controllers/authController.js";
   import { hashPassword } from "../helpers/authHelper.js";
@@ -32,6 +34,7 @@ import {
     hashPassword: jest.fn(),
   }));
 
+  // chatGPT is aid in creation of the set of unit tests below, but manual effort is used to tweak mockings
   describe("getOrdersController", () => {
     let mockRequest, mockResponse;
 
@@ -93,6 +96,144 @@ import {
     });
   });
 
+  // chatGPT is aid in creation of the set of unit tests below, but manual effort is used to tweak mockings
+  describe("getAllOrdersController", () => {
+    let mockRequest, mockResponse;
+
+    // ARRANGE
+    const mockOrders = [{
+      products: ["testProduct"],
+      payment: {},
+      buyer: "testBuyer",
+      status: "Processing",
+    }];
+
+    // chatGPT is used to create the mockSort below
+    const mockSort = jest.fn().mockReturnValue(mockOrders);
+    const mockPopulate2 = jest.fn().mockReturnValue({ sort: mockSort });
+    const mockPopulate1 = jest.fn().mockReturnValue({ populate: mockPopulate2 });
+    const mockFind = jest.fn().mockReturnValue({ populate: mockPopulate1 });
+
+    beforeEach(() => {
+      mockRequest = {}; // not used in this controller
+      mockResponse = {
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      };
+
+      // reset mocks
+      jest.clearAllMocks();
+    });
+
+    it("should return all orders successfully", async () => {
+      // ARRANGE
+      orderModel.find.mockImplementation(mockFind);
+
+      // ACT
+      await getAllOrdersController(mockRequest, mockResponse);
+
+      // ASSERT
+      expect(orderModel.find).toHaveBeenCalledWith({});
+      expect(mockPopulate1).toHaveBeenCalledWith("products", "-photo");
+      expect(mockPopulate2).toHaveBeenCalledWith("buyer", "name");
+      expect(mockSort).toHaveBeenCalledWith({ createdAt: "-1" });
+      expect(mockResponse.json).toHaveBeenCalledWith(mockOrders);
+    });
+
+    // chatGPT is used to create the unit test below
+    it("should return 500 status on DB error", async () => {
+      // ARRANGE
+      orderModel.find.mockImplementation(() => {
+        throw new Error("DB fail");
+      });
+
+      // ACT
+      await getAllOrdersController(mockRequest, mockResponse);
+
+      // ASSERT
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error While Getting Orders",
+        })
+      );
+    });
+  });
+
+  // chatGPT is aid in creation of the set of unit tests below, but manual effort is used to tweak mockings
+  describe("orderStatusController", () => {
+    let mockRequest, mockResponse;
+
+    beforeEach(() => {
+      mockResponse = {
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      };
+      jest.clearAllMocks();
+    });
+
+    it("should update and return the order when valid orderId and status are provided", async () => {
+      // ARRANGE
+      const mockOrder = { _id: "testOrderId", status: "Shipped" };
+      mockRequest = {
+        params: { orderId: "testOrderId" },
+        body: { status: "Shipped" },
+      };
+      orderModel.findByIdAndUpdate.mockResolvedValue(mockOrder);
+
+      // ACT
+      await orderStatusController(mockRequest, mockResponse);
+
+      // ASSERT
+      expect(orderModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        "testOrderId",
+        { status: "Shipped" },
+        { new: true }
+      );
+      expect(mockResponse.json).toHaveBeenCalledWith(mockOrder);
+    });
+
+    it("should return 500 status if DB update fails", async () => {
+      // ARRANGE
+      mockRequest = {
+        params: { orderId: "badId" },
+        body: { status: "Invalid" },
+      };
+      orderModel.findByIdAndUpdate.mockRejectedValue(new Error("DB Error"));
+
+      // ACT
+      await orderStatusController(mockRequest, mockResponse);
+
+      // ASSERT
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error While Updating Order",
+        })
+      );
+    });
+
+    it("should return 500 status if orderId is missing", async () => {
+      // ARRANGE
+      mockRequest = { params: {}, body: { status: "Processing" } };
+
+      // ACT
+      await orderStatusController(mockRequest, mockResponse);
+
+      // ASSERT
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error While Updating Order",
+        })
+      );
+    });
+  });
 
 
   // chatGPT is used to aid in creation of the set of unit tests below, but manual effort is used to tweak mockings and decide what to test
