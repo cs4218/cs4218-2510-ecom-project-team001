@@ -1,7 +1,9 @@
 import {
+    getOrdersController,
     updateProfileController
   } from "../controllers/authController.js";
   import { hashPassword } from "../helpers/authHelper.js";
+  import orderModel from "../models/orderModel.js";
   import userModel from "../models/userModel.js";
 
   // need to mock our orderModel
@@ -29,6 +31,69 @@ import {
     __esModule: true,
     hashPassword: jest.fn(),
   }));
+
+  describe("getOrdersController", () => {
+    let mockRequest, mockResponse;
+
+    // ARRANGE
+    const mockOrders = [{
+      products: ["testProduct"],
+      payment: {},
+      buyer: "testBuyer",
+      status: "Processing",
+    }];
+
+    // chatGPT is used to create the mockings below
+    const mockPopulate2 = jest.fn().mockReturnValue(mockOrders);
+    const mockPopulate1 = jest.fn().mockReturnValue({ populate: mockPopulate2 });
+    const mockFind = jest.fn().mockReturnValue({ populate: mockPopulate1 });
+
+    beforeEach(() => {
+      // simple mockResponse with json field
+      // chatGPT is used to create the mockResponse
+      mockResponse = {
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      };
+      jest.clearAllMocks();
+    });
+
+    it("should return correct orders for valid user._id", async () => {
+      // ARRANGE
+      mockRequest = { user: { _id: "testUserId" } }; // valid user._id
+      orderModel.find.mockImplementation(mockFind); // mock our find and populate
+
+      // ACT
+      await getOrdersController(mockRequest, mockResponse);
+
+      // ASSERT (chatGPT is used to create what to expect)
+      expect(mockFind).toHaveBeenCalledWith({ buyer: mockRequest.user._id });
+      expect(mockPopulate1).toHaveBeenCalledWith("products", "-photo");
+      expect(mockPopulate2).toHaveBeenCalledWith("buyer", "name");
+      expect(mockResponse.json).toHaveBeenCalledWith(mockOrders);
+    });
+
+    it("should return 500 status for missing user._id", async () => {
+      // ARRANGE
+      mockRequest = {}; // no user._id
+      orderModel.find.mockImplementation(mockFind); // mock our find and populate
+
+      // ACT
+      await getOrdersController(mockRequest, mockResponse);
+
+      // ASSERT (chatGPT is used to create what to expect)
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error While Getting Orders",
+        })
+      );
+    });
+  });
+
+
 
   // chatGPT is used to aid in creation of the set of unit tests below, but manual effort is used to tweak mockings and decide what to test
   describe("updateProfileController", () => {
