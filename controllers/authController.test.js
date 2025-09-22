@@ -77,7 +77,7 @@ import {
       expect(mockResponse.json).toHaveBeenCalledWith(mockOrders);
     });
 
-    it("should return 500 status for missing user._id", async () => {
+    it("should return 500 status and error message for missing user._id", async () => {
       // ARRANGE
       mockRequest = {}; // no user._id
       orderModel.find.mockImplementation(mockFind); // mock our find and populate
@@ -94,6 +94,26 @@ import {
         })
       );
     });
+
+    // chatGPT is used to create the unit test below
+    it("should return 500 status and error message on DB error", async () => {
+        // ARRANGE
+        orderModel.find.mockImplementation(() => {
+          throw new Error("DB fail");
+        });
+
+        // ACT
+        await getAllOrdersController(mockRequest, mockResponse);
+
+        // ASSERT
+        expect(mockResponse.status).toHaveBeenCalledWith(500);
+        expect(mockResponse.send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            success: false,
+            message: "Error While Getting Orders",
+          })
+        );
+      });
   });
 
   // chatGPT is aid in creation of the set of unit tests below, but manual effort is used to tweak mockings
@@ -142,7 +162,7 @@ import {
     });
 
     // chatGPT is used to create the unit test below
-    it("should return 500 status on DB error", async () => {
+    it("should return 500 status and error message on DB error", async () => {
       // ARRANGE
       orderModel.find.mockImplementation(() => {
         throw new Error("DB fail");
@@ -196,7 +216,7 @@ import {
       expect(mockResponse.json).toHaveBeenCalledWith(mockOrder);
     });
 
-    it("should return 500 status if DB update fails", async () => {
+    it("should return 500 status and error message if DB update fails", async () => {
       // ARRANGE
       mockRequest = {
         params: { orderId: "badId" },
@@ -217,7 +237,7 @@ import {
       );
     });
 
-    it("should return 500 status if orderId is missing", async () => {
+    it("should return 500 status and error message if orderId is missing", async () => {
       // ARRANGE
       mockRequest = { params: {}, body: { status: "Processing" } };
 
@@ -249,14 +269,14 @@ import {
       jest.clearAllMocks();
     });
 
-    it("should update profile successfully with valid input", async () => {
+    it("should update profile successfully with when password length > 6", async () => {
       // ARRANGE
       mockRequest = {
         user: { _id: "testUserId" },
         body: {
           name: "newName",
           email: "new@test.com",
-          password: "newPassword",
+          password: "newPassword123",
           address: "newAddress",
           phone: "123456",
         },
@@ -300,11 +320,62 @@ import {
       );
     });
 
-    it("should return error if password is too short", async () => {
+    it("should update profile successfully with when password length = 6", async () => {
+        // ARRANGE
+        mockRequest = {
+          user: { _id: "testUserId" },
+          body: {
+            name: "newName",
+            email: "new@test.com",
+            password: "passwd",
+            address: "newAddress",
+            phone: "123456",
+          },
+        };
+        const mockUser = {
+          _id: "testUserId",
+          name: "oldName",
+          email: "oldEmail@gmail.com",
+          password: "oldPassword",
+          phone: "987654",
+          address: "oldAddress",
+        };
+        const mockHashedPassword = "hashedNewPassword";
+        const mockUpdatedUser = { ...mockUser, ...mockRequest.body, password: mockHashedPassword };
+
+        userModel.findById.mockResolvedValue(mockUser);
+        hashPassword.mockResolvedValue(mockHashedPassword);
+        userModel.findByIdAndUpdate.mockResolvedValue(mockUpdatedUser);
+
+        // ACT
+        await updateProfileController(mockRequest, mockResponse);
+
+        // ASSERT
+        expect(userModel.findById).toHaveBeenCalledWith("testUserId");
+        expect(hashPassword).toHaveBeenCalledWith(mockRequest.body.password);
+        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+          "testUserId",
+          {
+            ...mockRequest.body,
+            password: mockHashedPassword,
+          },
+          { new: true }
+        );
+        expect(mockResponse.status).toHaveBeenCalledWith(200);
+        expect(mockResponse.send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            success: true,
+            message: "Profile Updated Successfully",
+            updatedUser: mockUpdatedUser,
+          })
+        );
+      });
+
+    it("should return error if password length < 6", async () => {
       // ARRANGE
       mockRequest = {
         user: { _id: "testUserId" },
-        body: { password: "123" }, // too short
+        body: { password: "123" },
       };
       const mockUser = { _id: "testUserId" };
       userModel.findById.mockResolvedValue(mockUser);
@@ -319,6 +390,45 @@ import {
       });
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
     });
+
+    it("should keep old password if empty password string is provided", async () => {
+        mockRequest = {
+          user: { _id: "testUserId" },
+          body: { password: "" }, // empty string
+        };
+        const mockUser = {
+          _id: "testUserId",
+          name: "Old Name",
+          email: "old@test.com",
+          password: "oldHash",
+          phone: "999999",
+          address: "oldAddress",
+        };
+        const mockUpdatedUser = { ...mockUser };
+
+        userModel.findById.mockResolvedValue(mockUser);
+        userModel.findByIdAndUpdate.mockResolvedValue(mockUpdatedUser);
+
+        await updateProfileController(mockRequest, mockResponse);
+
+        // hashPassword should not be called because "" is falsy
+        expect(hashPassword).not.toHaveBeenCalled();
+
+        // the DB update should reuse the old password
+        expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
+          "testUserId",
+          expect.objectContaining({ password: "oldHash" }),
+          { new: true }
+        );
+
+        expect(mockResponse.status).toHaveBeenCalledWith(200);
+        expect(mockResponse.send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            success: true,
+            updatedUser: mockUpdatedUser,
+          })
+        );
+      });
 
     it("should use old values if some fields are missing", async () => {
       // ARRANGE
