@@ -315,7 +315,7 @@ import {
       // ASSERT
       expect(userModel.findById).toHaveBeenCalledWith("testUserId");
       expect(mockResponse.json).toHaveBeenCalledWith({
-        error: "Passsword is required and 6 character long",
+        error: "Password is required and 6 character long",
       });
       expect(userModel.findByIdAndUpdate).not.toHaveBeenCalled();
     });
