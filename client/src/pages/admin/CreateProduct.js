@@ -55,19 +55,25 @@ const CreateProduct = () => {
       productData.append("quantity", quantity);
       productData.append("photo", photo);
       productData.append("category", category);
-      const { data } = axios.post(
+      productData.append("shipping", shipping); // was missing
+      const { data } = await axios.post(
         "/api/v1/product/create-product",
         productData
       );
       if (data?.success) {
-        toast.error(data?.message);
-      } else {
         toast.success("Product Created Successfully");
-        navigate("/dashboard/admin/products");
+        // Redirect after 1 second so that the toast can be seen as confirmation
+        setTimeout(() => navigate("/dashboard/admin/products"), 1000);
+      } else {
+        // Prefer explicit error if provided by API, else fall back to message
+        toast.error(data?.error || data?.message);
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.log(error);
-      toast.error("something went wrong");
+      // We could even add this
+      toast.error(error?.response?.data?.error ?? "Something went wrong");
+      setIsSubmitting(false);
     }
   };
 
