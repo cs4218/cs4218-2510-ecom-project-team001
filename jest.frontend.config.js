@@ -50,6 +50,8 @@ module.exports = {
     "<rootDir>/client/src/pages/CartPage.js",
     "<rootDir>/client/src/pages/admin/CreateCategory.js",
     "<rootDir>/client/src/components/Form/CategoryForm.js",
+    "<rootDir>/client/src/pages/admin/CreateProduct.js",
+    "<rootDir>/client/src/pages/admin/UpdateProduct.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
