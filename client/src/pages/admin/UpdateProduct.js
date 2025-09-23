@@ -30,9 +30,9 @@ const UpdateProduct = () => {
       setId(data.product._id);
       setDescription(data.product.description);
       setPrice(data.product.price);
-      setPrice(data.product.price);
       setQuantity(data.product.quantity);
-      setShipping(data.product.shipping);
+      // normalize shipping to string '1' or '0'
+      setShipping(data.product.shipping ? "1" : "0");
       setCategory(data.product.category._id);
     } catch (error) {
       console.log(error);
@@ -48,6 +48,8 @@ const UpdateProduct = () => {
       const { data } = await axios.get("/api/v1/category/get-category");
       if (data?.success) {
         setCategories(data?.category);
+      } else {
+        toast.error(data?.message ?? "Something went wrong");
       }
     } catch (error) {
       console.log(error);
@@ -70,15 +72,17 @@ const UpdateProduct = () => {
       productData.append("quantity", quantity);
       photo && productData.append("photo", photo);
       productData.append("category", category);
-      const { data } = axios.put(
+      productData.append("shipping", shipping);
+      const { data } = await axios.put(
         `/api/v1/product/update-product/${id}`,
         productData
       );
       if (data?.success) {
-        toast.error(data?.message);
-      } else {
+        // bug fixed
         toast.success("Product Updated Successfully");
         navigate("/dashboard/admin/products");
+      } else {
+        toast.error(data?.message);
       }
     } catch (error) {
       console.log(error);
@@ -94,8 +98,13 @@ const UpdateProduct = () => {
       const { data } = await axios.delete(
         `/api/v1/product/delete-product/${id}`
       );
-      toast.success("Product DEleted Succfully");
-      navigate("/dashboard/admin/products");
+
+      if (data?.success) {
+        toast.success("Product Deleted Successfully");
+        navigate("/dashboard/admin/products");
+      } else {
+        toast.error(data?.message ?? `Something went wrong: ${data?.error}`);
+      }
     } catch (error) {
       console.log(error);
       toast.error("Something went wrong");
@@ -121,6 +130,7 @@ const UpdateProduct = () => {
                   setCategory(value);
                 }}
                 value={category}
+                data-testid="category-select"
               >
                 {categories?.map((c) => (
                   <Option key={c._id} value={c._id}>
@@ -201,17 +211,20 @@ const UpdateProduct = () => {
               <div className="mb-3">
                 <Select
                   bordered={false}
-                  placeholder="Select Shipping "
+                  placeholder="Select Shipping"
                   size="large"
                   showSearch
                   className="form-select mb-3"
-                  onChange={(value) => {
-                    setShipping(value);
-                  }}
-                  value={shipping ? "yes" : "No"}
+                  onChange={(value) => setShipping(value)}
+                  value={shipping}
+                  data-testid="shipping-select"
                 >
-                  <Option value="0">No</Option>
-                  <Option value="1">Yes</Option>
+                  <Option value="0" data-testid="select-no-option">
+                    <span data-testid="select-no-option-label">No</span>
+                  </Option>
+                  <Option value="1" data-testid="select-yes-option">
+                    Yes
+                  </Option>
                 </Select>
               </div>
               <div className="mb-3">
