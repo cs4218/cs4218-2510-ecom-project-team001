@@ -1,4 +1,4 @@
-import { requireSignIn, isAdmin } from "./authMiddleware.js";
+import { requireSignIn, isAdmin } from "./authMiddleware";
 import JWT from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 
