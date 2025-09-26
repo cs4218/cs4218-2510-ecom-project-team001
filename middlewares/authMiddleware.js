@@ -20,16 +20,19 @@ export const isAdmin = async (req, res, next) => {
     try {
         const user = await userModel.findById(req.user._id);
         if(user.role !== 1) {
-            return res.status(401).send({
+            // return res.status(401).send({
+            return res.status(403).send({
                 success: false,
-                message: "UnAuthorized Access",
+                // message: "UnAuthorized Access",
+                message: "Forbidden",
             });
         } else {
             next();
         }
     } catch (error) {
         console.log(error);
-        res.status(401).send({
+        // res.status(401).send({
+        res.status(500).send({
             success: false,
             error,
             message: "Error in admin middleware",
