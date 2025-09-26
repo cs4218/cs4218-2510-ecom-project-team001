@@ -34,11 +34,21 @@ const renderComponentWithRouter = (component) =>
 
 describe("Admin View Products", () => {
   // Set-up / Clean-up state
+  beforeAll(() => {
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     axios.get.mockResolvedValue({
       data: { success: true, products: SAMPLE_PRODUCTS },
     });
+  });
+
+  afterAll(() => {
+    console.log.mockRestore();
+    console.error.mockRestore();
   });
 
   // Technique: Equivalence Partitioning — validates the typical success scenario where API returns a set of products, ensuring rendering logic works for the partition of valid results.
@@ -76,7 +86,7 @@ describe("Admin View Products", () => {
 
     // Assert
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith("Someething Went Wrong")
+      expect(toast.error).toHaveBeenCalledWith("Something Went Wrong")
     );
   });
 
