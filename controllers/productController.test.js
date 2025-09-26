@@ -9,7 +9,10 @@ import {
   realtedProductController,
   productCategoryController,
   braintreeTokenController,
-  brainTreePaymentController
+  brainTreePaymentController,
+  deleteProductController,
+  updateProductController,
+  createProductController
 } from '../controllers/productController.js';
 
 // Mock all dependencies
@@ -434,6 +437,538 @@ describe("Product Controller Tests", () => {
         success: false,
         message: "Error while filtering products",
         error,
+      });
+    });
+  });
+
+
+  describe("createProductController", () => {
+    afterEach(() => {
+      productModel.mockReset();
+    });
+
+    beforeEach(() => {
+      const defaultDoc = {
+        ...req.fields,
+        slug: "test-product",
+        photo: {},
+        save: jest.fn().mockResolvedValue(true),
+      };
+      productModel.mockImplementation(() => defaultDoc);
+    });
+
+    // Technique: Decision Table Testing — conditions are presence of required fields; actions are
+    // whether the order will be created. the respective error messages verifies validation and
+    // returns 400 bad request with the specific error message when any field is missing, without
+    // db calls.
+    test.each([
+      ["name", undefined, "Name is Required"],
+      ["description", undefined, "Description is Required"],
+      ["price", undefined, "Price is Required"],
+      ["category", undefined, "Category is Required"],
+      ["quantity", undefined, "Quantity is Required"],
+      ["shipping", undefined, "Shipping is Required"],
+      ["photo", undefined, "Photo is Required and should be less than 1mb"],
+    ])(
+      "returns 400 bad request when %s is missing",
+      async (missingField, missingValue, expectedError) => {
+        // Arrange
+        const reqMissingField = {
+          fields: { ...req.fields, [missingField]: missingValue },
+          files: missingField === "photo" ? {} : req.files,
+        };
+
+        // Act
+        await createProductController(reqMissingField, res);
+
+        // Assert
+        expect(productModel).not.toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith({ error: expectedError });
+      }
+    );
+
+    // Technique: Boundary Value Analysis — tests the photo size limit by providing a photo on
+    // the 1MB boundary
+    test("successfully uploads photo on 1MB boundary", async () => {
+      // Arrange
+      const reqWithBoundaryPhoto = {
+        ...req,
+        files: {
+          photo: {
+            path: "/tmp/photo.jpg",
+            type: "image/jpeg",
+            size: 1000000,
+          },
+        },
+      };
+
+      // Act
+      await createProductController(reqWithBoundaryPhoto, res);
+
+      // Assert - response 201 created
+      expect(productModel).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Product Created Successfully",
+        })
+      );
+    });
+
+    // Technique: Boundary Value Analysis — tests the photo size limit by providing a photo just
+    // below the 1MB boundary
+    test("successfully uploads photo just below 1MB boundary", async () => {
+      // Arrange
+      const reqWithBoundaryPhoto = {
+        ...req,
+        files: {
+          photo: {
+            path: "/tmp/photo.jpg",
+            type: "image/jpeg",
+            size: 999999,
+          },
+        },
+      };
+
+      // Act
+      await createProductController(reqWithBoundaryPhoto, res);
+
+      // Assert - response 201 created
+      expect(productModel).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: expect.stringMatching(/product created successfully/i),
+        })
+      );
+    });
+
+    // Technique: Boundary Value Analysis — tests the photo size limit by providing a photo just
+    // above the 1MB boundary
+    test("fails to upload photo just above 1MB boundary", async () => {
+      // Arrange
+      const reqWithBoundaryPhoto = {
+        ...req,
+        files: {
+          photo: {
+            path: "/tmp/photo.jpg",
+            type: "image/jpeg",
+            size: 1000001,
+          },
+        },
+      };
+
+      // Act
+      await createProductController(reqWithBoundaryPhoto, res);
+
+      // Assert - response 400 bad request
+      expect(productModel).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith({
+        error: expect.stringMatching(
+          /photo is required and should be less than 1mb/i
+        ),
+      });
+    });
+
+    // Technique: Combinatorial Testing — selection of some pairs of valid factor levels to ensure
+    // that product is created correctly and persisted
+    const imageBufferStub = Buffer.from("fake-image-data");
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      fs.readFileSync = jest.fn().mockReturnValue(imageBufferStub);
+    });
+
+    test.each([
+      [
+        "shipping",
+        { shipping: "0" },
+        { photo: { path: "fake-path", size: 500, type: "image/jpeg" } },
+      ],
+      [
+        "category",
+        { category: "Books" },
+        { photo: { path: "fake-path", size: 500, type: "image/jpeg" } },
+      ],
+      [
+        "name",
+        { name: "New Product" },
+        { photo: { path: "fake-path", size: 500, type: "image/jpeg" } },
+      ],
+    ])(
+      "creates product with varied %s + photo",
+      async (_label, fieldOverride, fileOverride) => {
+        // Arrange
+        const saveMock = jest.fn().mockResolvedValue(true);
+        const productDoc = {
+          ...req.fields,
+          ...fieldOverride,
+          slug: slugify(fieldOverride.name ?? req.fields.name),
+          photo: {},
+          save: saveMock,
+        };
+
+        productModel.mockImplementation(() => productDoc);
+
+        const newReq = {
+          fields: { ...req.fields, ...fieldOverride },
+          files: { ...req.files, ...fileOverride },
+        };
+
+        // Act
+        await createProductController(newReq, res);
+
+        // Assert
+        expect(productModel).toHaveBeenCalledWith({
+          ...newReq.fields,
+          slug: slugify(newReq.fields?.name),
+        });
+        expect(fs.readFileSync).toHaveBeenCalledWith(newReq.files?.photo?.path);
+        expect(productDoc.photo.data).toEqual(imageBufferStub);
+        expect(saveMock).toHaveBeenCalled();
+
+        // Response Assertions
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            success: true,
+            message: expect.stringMatching(/product created successfully/i),
+            products: productDoc,
+          })
+        );
+      }
+    );
+
+    // Technique: Control Flow Testing — forces the catch block by surfacing a model save failure,
+    // asserting the error log and the 500 failure payload execute.
+    test("returns 500 when persistence throws", async () => {
+      // Arrange
+      const failingDoc = {
+        ...req.fields,
+        slug: "test-product",
+        photo: {},
+        save: jest.fn().mockRejectedValue(new Error("db down")),
+      };
+      productModel.mockImplementation(() => failingDoc);
+
+      // Act
+      await createProductController(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error in creating product",
+        })
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+    });
+  });
+
+  describe("updateProductController", () => {
+    const makeUpdatedDoc = (overrides = {}) => ({
+      ...req.fields,
+      slug: "test-product",
+      photo: {},
+      save: jest.fn().mockResolvedValue(true),
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      productModel.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValue(makeUpdatedDoc());
+      fs.readFileSync.mockClear();
+    });
+
+    afterEach(() => {
+      productModel.findByIdAndUpdate.mockReset();
+    });
+
+    // Technique: Decision Table Testing — conditions are presence of required fields; actions are
+    // validation error responses. the test iterates through each required field, setting it to an
+    // invalid value, and asserts that the controller responds with a 400 status and the appropriate
+    // error message without calling the database update.
+    test.each([
+      ["name", "", "Name is Required"],
+      ["description", "", "Description is Required"],
+      ["price", "", "Price is Required"],
+      ["category", "", "Category is Required"],
+      ["quantity", "", "Quantity is Required"],
+      ["shipping", undefined, "Shipping is Required"],
+      ["photo", undefined, "Photo is Required and should be less than 1mb"],
+    ])(
+      "returns 400 when %s is missing",
+      async (missingField, missingValue, expectedError) => {
+        // Arrange
+        const reqMissingField = {
+          ...req,
+          fields: { ...req.fields, [missingField]: missingValue },
+          files: missingField === "photo" ? {} : req.files,
+        };
+
+        // Act
+        await updateProductController(reqMissingField, res);
+
+        // Assert
+        expect(productModel.findByIdAndUpdate).not.toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith({ error: expectedError });
+      }
+    );
+
+    // Technique: Boundary Value Analysis — tests the photo size limit by providing a photo on
+    // the 1MB boundary
+    test("accepts a photo exactly at the 1MB limit", async () => {
+      // Arrange
+      const reqWithBoundaryPhoto = {
+        ...req,
+        files: {
+          photo: {
+            ...req.files.photo,
+            size: 1000000,
+          },
+        },
+      };
+      const updatedDoc = makeUpdatedDoc();
+      productModel.findByIdAndUpdate.mockResolvedValue(updatedDoc);
+
+      // Act
+      await updateProductController(reqWithBoundaryPhoto, res);
+
+      // Assert
+      expect(productModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        req.params.pid,
+        { ...reqWithBoundaryPhoto.fields, slug: "test-product" },
+        { new: true }
+      );
+
+      expect(updatedDoc.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: expect.stringMatching(/product updated successfully/i),
+          products: updatedDoc,
+        })
+      );
+    });
+
+    // Technique: Boundary Value Analysis — tests the photo size limit by providing a photo just
+    // below the 1MB boundary
+    test("accepts a photo just below the 1MB limit", async () => {
+      // Arrange
+      const reqWithBoundaryPhoto = {
+        ...req,
+        files: {
+          photo: {
+            ...req.files.photo,
+            size: 999999,
+          },
+        },
+      };
+      const updatedDoc = makeUpdatedDoc();
+      productModel.findByIdAndUpdate.mockResolvedValue(updatedDoc);
+
+      // Act
+      await updateProductController(reqWithBoundaryPhoto, res);
+
+      // Assert
+      expect(productModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        req.params?.pid,
+        { ...reqWithBoundaryPhoto.fields, slug: "test-product" },
+        { new: true }
+      );
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: expect.stringMatching(/product updated successfully/i),
+          products: updatedDoc,
+        })
+      );
+    });
+
+    // Technique: Boundary Value Analysis — tests the photo size limit by providing a photo just
+    // above the 1MB boundary
+    test("rejects a photo just above the 1MB limit", async () => {
+      // Arrange
+      const reqWithBoundaryPhoto = {
+        ...req,
+        files: {
+          photo: {
+            ...req.files.photo,
+            size: 1000001,
+          },
+        },
+      };
+
+      // Act
+      await updateProductController(reqWithBoundaryPhoto, res);
+
+      // Assert
+      expect(productModel.findByIdAndUpdate).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith({
+        error: expect.stringMatching(
+          /photo is required and should be less than 1mb/i
+        ),
+      });
+    });
+
+    // Technique: Combinatorial Testing — selection of some pairs of valid factor levels to ensure
+    // that product is updated correctly and persisted
+    test.each([
+      [
+        "shipping flag toggled",
+        { shipping: "0" },
+        {
+          photo: {
+            path: "/tmp/updated-photo-1.jpg",
+            size: 750000,
+            type: "image/png",
+          },
+        },
+      ],
+      [
+        "name change",
+        { name: "Updated Product" },
+        {
+          photo: {
+            path: "/tmp/updated-photo-2.jpg",
+            size: 800000,
+            type: "image/jpeg",
+          },
+        },
+      ],
+      [
+        "category swap",
+        { category: "alt-category-id" },
+        {
+          photo: {
+            path: "/tmp/updated-photo-3.jpg",
+            size: 250000,
+            type: "image/webp",
+          },
+        },
+      ],
+    ])(
+      "updates product with %s",
+      async (_label, fieldOverride, fileOverride) => {
+        // Arrange
+        const comboReq = {
+          ...req,
+          fields: { ...req.fields, ...fieldOverride },
+          files: { ...req.files, ...fileOverride },
+        };
+        const updatedDoc = makeUpdatedDoc({
+          ...comboReq.fields,
+          photo: {},
+        });
+        productModel.findByIdAndUpdate.mockResolvedValue(updatedDoc);
+
+        // Act
+        await updateProductController(comboReq, res);
+
+        // Assert
+        expect(productModel.findByIdAndUpdate).toHaveBeenCalledWith(
+          req.params.pid,
+          { ...comboReq.fields, slug: "test-product" },
+          { new: true }
+        );
+
+        expect(updatedDoc.save).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            success: true,
+            message: expect.stringMatching(/product updated successfully/i),
+            products: updatedDoc,
+          })
+        );
+      }
+    );
+
+    // Technique: Control Flow Testing — triggers the catch path by forcing the model update to reject, verifying error propagation and logging.
+    test("returns 500 when update operation fails", async () => {
+      // Arrange
+      const failure = new Error("db down");
+      productModel.findByIdAndUpdate.mockRejectedValue(failure);
+
+      // Act
+      await updateProductController(req, res);
+
+      // Assert
+      expect(productModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        req.params.pid,
+        { ...req.fields, slug: "test-product" },
+        { new: true }
+      );
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: expect.stringMatching(/error in updating product/i),
+          error: failure,
+        })
+      );
+    });
+  });
+
+  describe("deleteProductController", () => {
+    beforeEach(() => {
+      productModel.findByIdAndDelete = jest.fn();
+    });
+
+    // Technique: Equivalence Partitioning — selects a typical existing product id from the
+    // existing product partition. Tests the happy-path delete scenario, returns 200 OK.
+    test("deletes product and returns success payload", async () => {
+      // Arrange
+      const selectMock = jest.fn().mockResolvedValue({ acknowledged: true });
+      productModel.findByIdAndDelete.mockReturnValue({ select: selectMock });
+
+      // Act
+      await deleteProductController(req, res);
+
+      // Assert
+      expect(productModel.findByIdAndDelete).toHaveBeenCalledWith(
+        req.params.pid
+      );
+      expect(selectMock).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith({
+        success: true,
+        message: expect.stringMatching(/product deleted successfully/i),
+      });
+    });
+
+    // Technique: Control Flow Testing — forces the catch clause by making the model reject,
+    // verifying 500 Internal Server Error HTTP response.
+    test("returns 500 when deletion throws", async () => {
+      // Arrange
+      const errorStub = new Error("db down");
+      const selectMock = jest.fn().mockRejectedValue(errorStub);
+      productModel.findByIdAndDelete.mockReturnValue({ select: selectMock });
+
+      // Act
+      await deleteProductController(req, res);
+
+      // Assert
+      expect(selectMock).toHaveBeenCalled();
+      expect(productModel.findByIdAndDelete).toHaveBeenCalledWith(
+        req.params.pid
+      );
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: expect.stringMatching(/error while deleting product/i),
+        error: errorStub,
       });
     });
   });
