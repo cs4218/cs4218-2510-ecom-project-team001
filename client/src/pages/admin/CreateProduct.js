@@ -7,6 +7,9 @@ import { Select } from "antd";
 import { useNavigate } from "react-router-dom";
 const { Option } = Select;
 
+const MAX_PRICE = 1000000;
+const MAX_QUANTITY = 1000000;
+
 const CreateProduct = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
@@ -18,6 +21,9 @@ const CreateProduct = () => {
   const [shipping, setShipping] = useState("");
   const [photo, setPhoto] = useState("");
 
+  // Form state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   //get all category
   const getAllCategory = async () => {
     try {
@@ -27,18 +33,21 @@ const CreateProduct = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something wwent wrong in getting catgeory");
+      toast.error("Something went wrong in getting category");
     }
   };
 
   useEffect(() => {
     getAllCategory();
+    return () => setIsSubmitting(false);
   }, []);
 
   //create product function
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
+      setIsSubmitting(true);
+
       const productData = new FormData();
       productData.append("name", name);
       productData.append("description", description);
@@ -46,19 +55,25 @@ const CreateProduct = () => {
       productData.append("quantity", quantity);
       productData.append("photo", photo);
       productData.append("category", category);
-      const { data } = axios.post(
+      productData.append("shipping", shipping); // was missing
+      const { data } = await axios.post(
         "/api/v1/product/create-product",
         productData
       );
       if (data?.success) {
-        toast.error(data?.message);
-      } else {
         toast.success("Product Created Successfully");
-        navigate("/dashboard/admin/products");
+        // Redirect after 1 second so that the toast can be seen as confirmation
+        setTimeout(() => navigate("/dashboard/admin/products"), 1000);
+      } else {
+        // Prefer explicit error if provided by API, else fall back to message
+        toast.error(data?.error || data?.message);
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.log(error);
-      toast.error("something went wrong");
+      // We could even add this
+      toast.error(error?.response?.data?.error ?? "Something went wrong");
+      setIsSubmitting(false);
     }
   };
 
@@ -137,7 +152,17 @@ const CreateProduct = () => {
                   value={price}
                   placeholder="write a Price"
                   className="form-control"
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value < 0 || value > MAX_PRICE) {
+                      toast.error(`Price must be between 0 and ${MAX_PRICE}`);
+                    }
+                    setPrice(
+                      Math.min(Math.max(value, 0), MAX_PRICE) // Clamp between 0 and 1,000,000
+                    );
+                  }}
+                  max={MAX_PRICE}
+                  min={0}
                 />
               </div>
               <div className="mb-3">
@@ -146,7 +171,17 @@ const CreateProduct = () => {
                   value={quantity}
                   placeholder="write a quantity"
                   className="form-control"
-                  onChange={(e) => setQuantity(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value < 0 || value > MAX_QUANTITY) {
+                      toast.error(
+                        `Quantity must be between 0 and ${MAX_QUANTITY}`
+                      );
+                    }
+                    setQuantity(Math.min(Math.max(value, 0), MAX_QUANTITY));
+                  }}
+                  max={MAX_QUANTITY}
+                  min={0}
                 />
               </div>
               <div className="mb-3">
@@ -165,7 +200,11 @@ const CreateProduct = () => {
                 </Select>
               </div>
               <div className="mb-3">
-                <button className="btn btn-primary" onClick={handleCreate}>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleCreate}
+                  disabled={isSubmitting}
+                >
                   CREATE PRODUCT
                 </button>
               </div>

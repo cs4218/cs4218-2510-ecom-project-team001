@@ -28,7 +28,8 @@ const HomePage = () => {
         setCategories(data?.category);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("Failed to get categories");
     }
   };
 
@@ -45,17 +46,19 @@ const HomePage = () => {
       setProducts(data.products);
     } catch (error) {
       setLoading(false);
-      console.log(error);
+      console.error(error);
+      toast.error("Failed to get products");
     }
   };
 
-  //getTOtal COunt
+  //getTotal Count
   const getTotal = async () => {
     try {
       const { data } = await axios.get("/api/v1/product/product-count");
       setTotal(data?.total);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("Failed to get total products");
     }
   };
 
@@ -71,8 +74,9 @@ const HomePage = () => {
       setLoading(false);
       setProducts([...products, ...data?.products]);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setLoading(false);
+      toast.error("Failed to load more products");
     }
   };
 
@@ -87,7 +91,11 @@ const HomePage = () => {
     setChecked(all);
   };
   useEffect(() => {
-    if (!checked.length || !radio.length) getAllProducts();
+    if (!checked.length && !radio.length) {
+      getAllProducts();
+      getTotal();
+      setPage(1);
+    }
   }, [checked.length, radio.length]);
 
   useEffect(() => {
@@ -102,8 +110,11 @@ const HomePage = () => {
         radio,
       });
       setProducts(data?.products);
+      console.log(data?.products);
+      setTotal(data?.products.length);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("Failed to filter products");
     }
   };
   return (
@@ -153,7 +164,7 @@ const HomePage = () => {
           <h1 className="text-center">All Products</h1>
           <div className="d-flex flex-wrap">
             {products?.map((p) => (
-              <div className="card m-2" key={p._id}>
+              <div className="card m-2" key={p._id} role="article" aria-label={`Product: ${p.name}`}>
                 <img
                   src={`/api/v1/product/product-photo/${p._id}`}
                   className="card-img-top"
@@ -215,6 +226,9 @@ const HomePage = () => {
                   </>
                 )}
               </button>
+            )}
+            {!products.length && (
+              <h4>No Products Found</h4>
             )}
           </div>
         </div>
