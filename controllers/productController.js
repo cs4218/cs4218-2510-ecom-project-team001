@@ -25,19 +25,22 @@ export const createProductController = async (req, res) => {
     //alidation
     switch (true) {
       case !name:
-        return res.status(500).send({ error: "Name is Required" });
+        return res.status(400).send({ error: "Name is Required" });
       case !description:
-        return res.status(500).send({ error: "Description is Required" });
+        return res.status(400).send({ error: "Description is Required" });
       case !price:
-        return res.status(500).send({ error: "Price is Required" });
+        return res.status(400).send({ error: "Price is Required" });
       case !category:
-        return res.status(500).send({ error: "Category is Required" });
+        return res.status(400).send({ error: "Category is Required" });
       case !quantity:
-        return res.status(500).send({ error: "Quantity is Required" });
-      case photo && photo.size > 1000000:
+        return res.status(400).send({ error: "Quantity is Required" });
+      // Potential server bug
+      case !shipping:
+        return res.status(400).send({ error: "Shipping is Required" });
+      case !photo || (photo && photo.size > 1000000):
         return res
-          .status(500)
-          .send({ error: "photo is Required and should be less then 1mb" });
+          .status(400)
+          .send({ error: "Photo is Required and should be less than 1mb" });
     }
 
     const products = new productModel({ ...req.fields, slug: slugify(name) });
@@ -56,7 +59,7 @@ export const createProductController = async (req, res) => {
     res.status(500).send({
       success: false,
       error,
-      message: "Error in crearing product",
+      message: "Error in creating product",
     });
   }
 };
@@ -166,19 +169,22 @@ export const updateProductController = async (req, res) => {
     //alidation
     switch (true) {
       case !name:
-        return res.status(500).send({ error: "Name is Required" });
+        return res.status(400).send({ error: "Name is Required" });
       case !description:
-        return res.status(500).send({ error: "Description is Required" });
+        return res.status(400).send({ error: "Description is Required" });
       case !price:
-        return res.status(500).send({ error: "Price is Required" });
+        return res.status(400).send({ error: "Price is Required" });
       case !category:
-        return res.status(500).send({ error: "Category is Required" });
+        return res.status(400).send({ error: "Category is Required" });
       case !quantity:
-        return res.status(500).send({ error: "Quantity is Required" });
-      case photo && photo.size > 1000000:
+        return res.status(400).send({ error: "Quantity is Required" });
+      case !shipping:
+        return res.status(400).send({ error: "Shipping is Required" });
+
+      case !photo || (photo && photo.size > 1000000):
         return res
-          .status(500)
-          .send({ error: "photo is Required and should be less then 1mb" });
+          .status(400)
+          .send({ error: "Photo is Required and should be less than 1mb" });
     }
 
     const products = await productModel.findByIdAndUpdate(
@@ -201,7 +207,7 @@ export const updateProductController = async (req, res) => {
     res.status(500).send({
       success: false,
       error,
-      message: "Error in Updte product",
+      message: "Error in Updating product",
     });
   }
 };
@@ -347,7 +353,7 @@ export const realtedProductController = async (req, res) => {
 export const productCategoryController = async (req, res) => {
   try {
     if (!req.params.slug) {
-      return res.status(400).send({ 
+      return res.status(400).send({
         success: false,
         error: new Error("Category slug is required"),
         message: "Category slug is required",

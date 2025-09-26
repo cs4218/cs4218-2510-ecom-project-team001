@@ -468,7 +468,7 @@ describe("Product Controller Tests", () => {
       ["category", undefined, "Category is Required"],
       ["quantity", undefined, "Quantity is Required"],
       ["shipping", undefined, "Shipping is Required"],
-      ["photo", undefined, "Photo is Required and should be less then 1mb"],
+      ["photo", undefined, "Photo is Required and should be less than 1mb"],
     ])(
       "returns 400 bad request when %s is missing",
       async (missingField, missingValue, expectedError) => {
@@ -569,7 +569,7 @@ describe("Product Controller Tests", () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith({
         error: expect.stringMatching(
-          /photo is required and should be less then 1mb/i
+          /photo is required and should be less than 1mb/i
         ),
       });
     });
@@ -701,7 +701,7 @@ describe("Product Controller Tests", () => {
       ["category", "", "Category is Required"],
       ["quantity", "", "Quantity is Required"],
       ["shipping", undefined, "Shipping is Required"],
-      ["photo", undefined, "Photo is Required and should be less then 1mb"],
+      ["photo", undefined, "Photo is Required and should be less than 1mb"],
     ])(
       "returns 400 when %s is missing",
       async (missingField, missingValue, expectedError) => {
@@ -817,7 +817,7 @@ describe("Product Controller Tests", () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith({
         error: expect.stringMatching(
-          /photo is required and should be less then 1mb/i
+          /photo is required and should be less than 1mb/i
         ),
       });
     });
