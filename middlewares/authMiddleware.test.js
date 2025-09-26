@@ -33,29 +33,6 @@ describe('Auth Middleware', () => {
             expect(next).toHaveBeenCalled();
         });
 
-        // it('should log error if token is invalid', async () => {
-        //     req.headers.authorization = "invalidtoken";
-        //     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-        //     JWT.verify.mockImplementation(() => { throw new Error("Invalid token"); });
-
-        //     await requireSignIn(req, res, next);
-
-        //     expect(consoleSpy).toHaveBeenCalledWith(new Error("Invalid token"));
-        //     expect(next).not.toHaveBeenCalled();
-        //     consoleSpy.mockRestore();
-        // });
-
-        // it('should handle missing token gracefully', async () => {
-        //     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-        //     JWT.verify.mockImplementation(() => { throw new Error("No token provided"); });
-
-        //     await requireSignIn(req, res, next);
-
-        //     expect(consoleSpy).toHaveBeenCalledWith(new Error("No token provided"));
-        //     expect(next).not.toHaveBeenCalled();
-        //     consoleSpy.mockRestore();
-        // });
-
         it('should return 401 if no token is provided', async () => {
             await requireSignIn(req, res, next);
 
