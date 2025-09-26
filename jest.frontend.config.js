@@ -22,6 +22,7 @@ module.exports = {
   // only run these tests
   testMatch: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
+    "<rootDir>/client/src/context/*.test.js",
     "<rootDir>/client/src/pages/HomePage.test.js",
     "<rootDir>/client/src/pages/admin/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
@@ -37,7 +38,8 @@ module.exports = {
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
-    "<rootDir>/client/src/pages/Auth/**",
+    "<rootDir>/client/src/pages/Auth/**", 
+    "<rootDir>/client/src/context/**",
     "<rootDir>/client/src/pages/HomePage.js",
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",

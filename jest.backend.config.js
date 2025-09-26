@@ -7,7 +7,9 @@ module.exports = {
 
   // which test to run
   testMatch: [
-    "<rootDir>/controllers/*.test.js",
+    "<rootDir>/controllers/*.test.js", 
+    "<rootDir>/helpers/*.test.js",
+    "<rootDir>/middlewares/*.test.js",
     "<rootDir>/models/*.test.js"
   ],
 
@@ -16,6 +18,8 @@ module.exports = {
   // add controllers to code coverage array, it should eventually reach
   // collectCoverageFrom: ["controllers/**"], with full coverage
   collectCoverageFrom: [
+    "helpers/**",
+    "middlewares/**",
     "controllers/categoryController.js",
     "controllers/productController.js",
     "models/**"
