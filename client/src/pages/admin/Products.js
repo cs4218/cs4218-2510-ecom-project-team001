@@ -11,10 +11,15 @@ const Products = () => {
   const getAllProducts = async () => {
     try {
       const { data } = await axios.get("/api/v1/product/get-product");
-      setProducts(data.products);
+
+      if (data?.success && Array.isArray(data.products)) {
+        setProducts(data.products);
+      } else {
+        toast.error(data?.message ?? "Something Went Wrong");
+      }
     } catch (error) {
       console.log(error);
-      toast.error("Someething Went Wrong");
+      toast.error("Something Went Wrong");
     }
   };
 
@@ -22,6 +27,7 @@ const Products = () => {
   useEffect(() => {
     getAllProducts();
   }, []);
+
   return (
     <Layout>
       <div className="row">
@@ -30,9 +36,14 @@ const Products = () => {
         </div>
         <div className="col-md-9 ">
           <h1 className="text-center">All Products List</h1>
+          {/* Note: fixed overflow here previously in another PR */}
           <div className="row g-3">
             {products?.map((p) => (
-              <div key={p._id} className="col-12 col-sm-6 col-md-4">
+              <div
+                key={p._id}
+                className="col-12 col-sm-6 col-md-4"
+                data-testid="product-card"
+              >
                 <Link
                   to={`/dashboard/admin/product/${p.slug}`}
                   className="product-link"

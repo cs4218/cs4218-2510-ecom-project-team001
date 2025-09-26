@@ -109,3 +109,37 @@ export const SAMPLE_ORDERS = [
     ],
   },
 ];
+export const SAMPLE_PRODUCTS = [
+  {
+    _id: "pid1",
+    name: "Ipad Protector",
+    slug: "ipad-protector",
+    description: "Screen protection for iPads.",
+    price: 12.99,
+    category: {
+      _id: "stationery",
+      name: "Stationery",
+      slug: "stationery",
+    },
+    quantity: 150,
+    shipping: true,
+    createdAt: "2025-02-01T09:00:00.000Z",
+    updatedAt: "2025-02-01T09:00:00.000Z",
+  },
+  {
+    _id: "pid2",
+    name: "Aurora Lamp",
+    slug: "aurora-lamp",
+    description: "Serene lighting with adaptive colors.",
+    price: 59.5,
+    category: {
+      _id: "lighting",
+      name: "Lighting",
+      slug: "lighting",
+    },
+    quantity: 80,
+    shipping: true,
+    createdAt: "2025-02-02T12:30:00.000Z",
+    updatedAt: "2025-02-02T12:30:00.000Z",
+  },
+];
