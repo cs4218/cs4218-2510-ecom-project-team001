@@ -5,7 +5,8 @@ import userModel from "../models/userModel.js";
 export const requireSignIn = async (req, res, next) => {
     try {
         const token = req.headers.authorization;
-        if (!token) {
+        // edge case: no token provided
+        if (!token) { 
             return res.status(401).send({
                 success: false,
                 message: "No token provided",
@@ -28,7 +29,15 @@ export const requireSignIn = async (req, res, next) => {
 export const isAdmin = async (req, res, next) => {
     try {
         const user = await userModel.findById(req.user._id);
+        // edge case: user not found
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: "User not found",
+            });
+        }
         if(user.role !== 1) {
+            // fix status code to 403
             return res.status(403).send({
                 success: false,
                 message: "Forbidden",
@@ -38,6 +47,7 @@ export const isAdmin = async (req, res, next) => {
         }
     } catch (error) {
         console.log(error);
+        // fix status code to 500
         res.status(500).send({
             success: false,
             error,

@@ -4,35 +4,81 @@ import orderModel from "../models/orderModel.js";
 import { comparePassword, hashPassword } from "./../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
 
+import validator from "validator";
+
 export const registerController = async (req, res) => {
   try {
     const { name, email, password, phone, address, answer } = req.body;
     //validations
+    // fix: standardise error response format
     if (!name) {
-      return res.send({ error: "Name is Required" });
+      // return res.send({ error: "Name is Required" });
+      // add status code
+      return res.status(400).send({ 
+        success: false,
+        message: "Name is Required" // fix inconsistency
+      }); 
     }
     if (!email) {
-      return res.send({ message: "Email is Required" });
+      // add status code
+      return res.status(400).send({ 
+        success: false,
+        message: "Email is Required" 
+      }); 
     }
     if (!password) {
-      return res.send({ message: "Password is Required" });
+      // add status code
+      return res.status(400).send({ 
+        success: false,
+        message: "Password is Required" 
+      });
     }
     if (!phone) {
-      return res.send({ message: "Phone no is Required" });
+      // add status code
+      return res.status(400).send({ 
+        success: false,
+        message: "Phone no is Required" 
+      });
     }
     if (!address) {
-      return res.send({ message: "Address is Required" });
+      // add status code
+      return res.status(400).send({ 
+        success: false,
+        message: "Address is Required" 
+      });
     }
     if (!answer) {
-      return res.send({ message: "Answer is Required" });
+      // add status code
+      return res.status(400).send({ 
+        success: false,
+        message: "Answer is Required" 
+      });
     }
+
+    // add a check for email format
+    if (!validator.isEmail(email)) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid email format",
+      });
+    }
+
+    // add a check for phone format
+    if (!validator.isMobilePhone(phone, 'any')) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid phone number format",
+      });
+    }
+
     //check user
     const exisitingUser = await userModel.findOne({ email });
     //exisiting user
     if (exisitingUser) {
-      return res.status(200).send({
+      // fix status code to 409
+      return res.status(409).send({
         success: false,
-        message: "Already Register please login",
+        message: "Already Registered please login",
       });
     }
     //register user
@@ -56,7 +102,8 @@ export const registerController = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Errro in Registeration",
+      // message: "Errro in Registeration", 
+      message: "Error in Registration", // fix typo
       error,
     });
   }
@@ -83,7 +130,8 @@ export const loginController = async (req, res) => {
     }
     const match = await comparePassword(password, user.password);
     if (!match) {
-      return res.status(200).send({
+      // fix status code to 401
+      return res.status(401).send({
         success: false,
         message: "Invalid Password",
       });
@@ -121,13 +169,14 @@ export const forgotPasswordController = async (req, res) => {
   try {
     const { email, answer, newPassword } = req.body;
     if (!email) {
-      res.status(400).send({ message: "Emai is required" });
+      // res.status(400).send({ message: "Emai is required" });
+      return res.status(400).send({ message: "Email is required" }); // fix typo; add missing return
     }
     if (!answer) {
-      res.status(400).send({ message: "answer is required" });
+      return res.status(400).send({ message: "Answer is required" }); // add missing return
     }
     if (!newPassword) {
-      res.status(400).send({ message: "New Password is required" });
+      return res.status(400).send({ message: "New Password is required" }); // add missing return
     }
     //check
     const user = await userModel.findOne({ email, answer });

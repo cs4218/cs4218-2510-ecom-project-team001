@@ -22,6 +22,7 @@ module.exports = {
     "middlewares/**",
     "controllers/categoryController.js",
     "controllers/productController.js",
+    "controllers/authController.js",
     "models/**"
   ], // add more files as needed
   coverageThreshold: {
