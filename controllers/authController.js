@@ -72,9 +72,9 @@ export const registerController = async (req, res) => {
     }
 
     //check user
-    const exisitingUser = await userModel.findOne({ email });
-    //exisiting user
-    if (exisitingUser) {
+    const existingUser = await userModel.findOne({ email });
+    //existing user
+    if (existingUser) {
       // fix status code to 409
       return res.status(409).send({
         success: false,
@@ -115,11 +115,21 @@ export const loginController = async (req, res) => {
     const { email, password } = req.body;
     //validation
     if (!email || !password) {
-      return res.status(404).send({
+      // fix status code to 400
+      return res.status(400).send({
         success: false,
         message: "Invalid email or password",
       });
     }
+
+    // add a check for email format
+    if (!validator.isEmail(email)) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid email format",
+      });
+    }
+
     //check user
     const user = await userModel.findOne({ email });
     if (!user) {
