@@ -3,6 +3,7 @@ import userModel from "../models/userModel.js";
 import { comparePassword, hashPassword } from "./../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
 import validator from "validator";
+
 jest.mock("../models/userModel.js");
 jest.mock("./../helpers/authHelper.js", () => ({
     hashPassword: jest.fn(),
