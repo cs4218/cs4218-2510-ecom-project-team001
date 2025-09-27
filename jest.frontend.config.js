@@ -26,6 +26,7 @@ module.exports = {
     "<rootDir>/client/src/pages/HomePage.test.js",
     "<rootDir>/client/src/pages/admin/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
+    "<rootDir>/client/src/components/Routes/Private.test.js",
     "<rootDir>/client/src/pages/Policy.test.js",
     "<rootDir>/client/src/pages/CategoryProduct.test.js",
     "<rootDir>/client/src/pages/ProductDetails.test.js",
@@ -38,7 +39,7 @@ module.exports = {
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
-    "<rootDir>/client/src/pages/Auth/**", 
+    "<rootDir>/client/src/pages/Auth/**",
     "<rootDir>/client/src/context/**",
     "<rootDir>/client/src/pages/HomePage.js",
     "<rootDir>/client/src/pages/Auth/*.test.js",
@@ -56,6 +57,7 @@ module.exports = {
     "<rootDir>/client/src/pages/admin/UpdateProduct.js",
     "<rootDir>/client/src/pages/admin/AdminOrders.js",
     "<rootDir>/client/src/pages/admin/Products.js",
+    "<rootDir>/client/src/components/Routes/Private.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
@@ -69,6 +71,6 @@ module.exports = {
   // more detailed output
   verbose: true,
   reporters: ["default"],
-  silent: false,
+  silent: true,
   testLocationInResults: true,
 };
