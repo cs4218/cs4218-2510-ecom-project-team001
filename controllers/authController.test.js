@@ -3,6 +3,7 @@ import userModel from "../models/userModel.js";
 import { comparePassword, hashPassword } from "./../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
 import validator from "validator";
+import { th } from "date-fns/locale";
 
 jest.mock("../models/userModel.js");
 jest.mock("./../helpers/authHelper.js", () => ({
@@ -479,14 +480,15 @@ describe('Auth Controller', () => {
         });
     });
 
-    // describe('testController', () => {
-    //     it('should return test message', async () => {
-    //         await testController(req, res);
-    //         expect(res.status).toHaveBeenCalledWith(200);
-    //         expect(res.send).toHaveBeenCalledWith({
-    //             success: true,
-    //             message: "Protected route"
-    //         });
-    //     });
-    // });
+    describe('testController', () => {
+        it('should send protected route message', async () => {
+            await testController(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.send).toHaveBeenCalledWith({
+                success: true,
+                message: "Protected Routes"
+            });
+        });
+    });
 });

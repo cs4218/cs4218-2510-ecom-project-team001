@@ -10,7 +10,7 @@ export const registerController = async (req, res) => {
   try {
     const { name, email, password, phone, address, answer } = req.body;
     //validations
-    // fix: standardise error response format
+    // fix: standardised error response format
     if (!name) {
       // return res.send({ error: "Name is Required" });
       // add status code
@@ -178,24 +178,24 @@ export const loginController = async (req, res) => {
 export const forgotPasswordController = async (req, res) => {
   try {
     const { email, answer, newPassword } = req.body;
-    // fix: standardise error response format
+    // fix: standardised error response format
     if (!email) {
       // res.status(400).send({ message: "Emai is required" });
-      // add missing return
+      // fix: added missing return
       return res.status(400).send({ 
         success: false,
         message: "Email is required"  // fix typo
       }); 
     }
     if (!answer) {
-      // add missing return
+      // fix: added missing return
       return res.status(400).send({ 
         success: false,
         message: "Answer is required" 
       }); 
     }
     if (!newPassword) {
-      // add missing return
+      // fix: added missing return
       return res.status(400).send({ 
         success: false,
         message: "New Password is required" 
@@ -236,16 +236,21 @@ export const forgotPasswordController = async (req, res) => {
 };
 
 //test controller
-export const testController = (req, res) => {
+// fix: added async to function
+export const testController = async (req, res) => {
   try {
-    res.send("Protected Routes");
+    // add status code and success field
+    res.status(200).send({
+      success: true,
+      message: "Protected Routes",
+    });
   } catch (error) {
     console.log(error);
     res.send({ error });
   }
 };
 
-//update prfole
+//update profile
 export const updateProfileController = async (req, res) => {
   try {
     const { name, email, password, address, phone } = req.body;
