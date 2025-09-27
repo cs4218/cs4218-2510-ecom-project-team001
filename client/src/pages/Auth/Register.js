@@ -4,6 +4,16 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import "../../styles/AuthStyles.css";
+import validator from "validator";
+
+const validateEmail = (email) => {
+  return validator.isEmail(email);
+}
+
+const validatePhone = (phone) => {
+  return validator.isMobilePhone(phone, 'any');
+}
+
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -95,7 +105,7 @@ const Register = () => {
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="form-control"
-              id="exampleInputaddress1"
+              id="exampleInputAddress1"
               placeholder="Enter Your Address"
               required
             />
@@ -117,7 +127,7 @@ const Register = () => {
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               className="form-control"
-              id="exampleInputanswer1"
+              id="exampleInputAnswer1"
               placeholder="What is Your Favorite sports"
               required
             />
