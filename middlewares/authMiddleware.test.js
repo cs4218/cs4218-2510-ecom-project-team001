@@ -77,6 +77,21 @@ describe('Auth Middleware', () => {
             expect(res.status).not.toHaveBeenCalled();
         });
 
+        it('should return 404 if user is not found', async () => {
+            req.user = { _id: "123" };
+            userModel.findById.mockResolvedValue(null);
+
+            await isAdmin(req, res, next);
+
+            expect(userModel.findById).toHaveBeenCalledWith("123");
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.send).toHaveBeenCalledWith({
+                success: false,
+                message: "User not found",
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
         it('should return 403 if user is not admin', async () => {
             req.user = { _id: "123", role: 0 };
             userModel.findById.mockResolvedValue({ role: 0 });
