@@ -178,16 +178,38 @@ export const loginController = async (req, res) => {
 export const forgotPasswordController = async (req, res) => {
   try {
     const { email, answer, newPassword } = req.body;
+    // fix: standardise error response format
     if (!email) {
       // res.status(400).send({ message: "Emai is required" });
-      return res.status(400).send({ message: "Email is required" }); // fix typo; add missing return
+      // add missing return
+      return res.status(400).send({ 
+        success: false,
+        message: "Email is required"  // fix typo
+      }); 
     }
     if (!answer) {
-      return res.status(400).send({ message: "Answer is required" }); // add missing return
+      // add missing return
+      return res.status(400).send({ 
+        success: false,
+        message: "Answer is required" 
+      }); 
     }
     if (!newPassword) {
-      return res.status(400).send({ message: "New Password is required" }); // add missing return
+      // add missing return
+      return res.status(400).send({ 
+        success: false,
+        message: "New Password is required" 
+      }); 
     }
+
+    // add a check for email format
+    if (!validator.isEmail(email)) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid email format",
+      });
+    }
+
     //check
     const user = await userModel.findOne({ email, answer });
     //validation
