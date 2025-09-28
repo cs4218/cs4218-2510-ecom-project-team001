@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Policy from './Policy'; // Adjust path as needed
-import Layout from '../components/Layout'; // Adjust path as needed
+import Policy from './Policy';
+import Layout from '../components/Layout';
 
 // Mock the Layout component
 jest.mock('../components/Layout', () => {
