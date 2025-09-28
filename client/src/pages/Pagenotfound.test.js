@@ -28,32 +28,41 @@ describe('Page not found', () => {
   });
 
   test('renders without crashing', () => {
+    // Arrange + Act
     renderWithRouter(<Pagenotfound />);
+    // Assert
     expect(screen.getByTestId('layout')).toBeInTheDocument();
   });
 
   test('passes correct title to Layout component', () => {
+    // Arrange + Act
     renderWithRouter(<Pagenotfound />);
+    // Assert
     const layoutElement = screen.getByTestId('layout');
     expect(layoutElement).toHaveAttribute('data-title', 'Go Back - Page Not Found');
   });
 
   test('displays 404 error code', () => {
+    // Arrange + Act
     renderWithRouter(<Pagenotfound />);
+    // Assert
     const title = screen.getByRole('heading', { level: 1 });
     expect(title).toHaveTextContent('404');
   });
 
   test('displays error message', () => {
+    // Arrange + Act
     renderWithRouter(<Pagenotfound />);
+    // Assert
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading).toHaveTextContent('Oops ! Page Not Found');
   });
 
   test('renders Go Back link with correct attributes', () => {
+    // Arrange + Act
     renderWithRouter(<Pagenotfound />);
+    // Assert
     const goBackLink = screen.getByText("Go Back");
-    
     expect(goBackLink).toBeInTheDocument();
     expect(goBackLink).toHaveAttribute('href', '/');
   });
