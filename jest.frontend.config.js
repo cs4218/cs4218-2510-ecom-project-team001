@@ -27,6 +27,7 @@ export default {
     "<rootDir>/client/src/pages/admin/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
     "<rootDir>/client/src/components/Routes/Private.test.js",
+    "<rootDir>/client/src/components/UserMenu.test.js",
     "<rootDir>/client/src/pages/Policy.test.js",
     "<rootDir>/client/src/pages/CategoryProduct.test.js",
     "<rootDir>/client/src/pages/ProductDetails.test.js",
@@ -34,7 +35,8 @@ export default {
     "<rootDir>/client/src/pages/Categories.test.js",
     "<rootDir>/client/src/context/cart.test.js",
     "<rootDir>/client/src/pages/CartPage.test.js",
-    "<rootDir>/client/src/pages/Pagenotfound.test.js"
+    "<rootDir>/client/src/pages/Pagenotfound.test.js",
+    "<rootDir>/client/src/pages/user/Dashboard.test.js",
   ],
 
   // jest code coverage
@@ -58,7 +60,8 @@ export default {
     "<rootDir>/client/src/pages/admin/AdminOrders.js",
     "<rootDir>/client/src/pages/admin/Products.js",
     "<rootDir>/client/src/components/Routes/Private.js",
-    "<rootDir>/client/src/pages/Pagenotfound.js"
+    "<rootDir>/client/src/components/UserMenu.js",
+    "<rootDir>/client/src/pages/user/Dashboard.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
