@@ -1,0 +1,16 @@
+############## START ##############
+npm run dev
+
+
+############## COVERAGE ##############
+
+/Users/aaronjt/Downloads/sonarqube-25.9.0.112764/bin/macosx-universal-64/sonar.sh start
+
+npm run sonarqube
+
+
+
+############## TEST ##############
+npm run test --coverage
+
+

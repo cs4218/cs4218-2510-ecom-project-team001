@@ -77,18 +77,13 @@ describe("Orders Component", () => {
 
       render(<Orders />);
 
+      // check the order details are loaded and correct
       expect(await screen.findByText("Processing")).toBeInTheDocument();
       expect(screen.getByText("John Doe")).toBeInTheDocument();
       expect(screen.getByText(/Success/i)).toBeInTheDocument();
       expect(screen.getByText("2")).toBeInTheDocument(); // quantity
-    });
 
-    it("should render product details correctly inside each order", async () => {
-      useAuth.mockReturnValue([{ token: "valid-token" }, jest.fn()]);
-      axios.get.mockResolvedValue({ data: mockOrders });
-
-      render(<Orders />);
-
+      // check the product details are loaded and correct
       expect(await screen.findByText("Product A")).toBeInTheDocument();
       expect(screen.getByText(/Price : 100/)).toBeInTheDocument();
       expect(screen.getByText("Product B")).toBeInTheDocument();
