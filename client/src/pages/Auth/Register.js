@@ -6,10 +6,6 @@ import toast from "react-hot-toast";
 import "../../styles/AuthStyles.css";
 import validator from "validator";
 
-const validateEmail = (email) => {
-  return validator.isEmail(email);
-}
-
 const validatePhone = (phone) => {
   return validator.isMobilePhone(phone, 'any');
 }

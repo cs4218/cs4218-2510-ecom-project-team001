@@ -4,15 +4,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import "../../styles/AuthStyles.css";
-import validator from "validator";
-
-const validateEmail = (email) => {
-  return validator.isEmail(email);
-}
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -21,29 +17,27 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateEmail(email)) {
-      toast.error("Please enter a valid email address.");
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match.");
       return;
     }
 
     setLoading(true);
     try {
       const res = await axios.post("/api/v1/auth/forgot-password", {
-        email,
+        email: email.trim(),
         newPassword,
-        answer,
+        answer: answer.trim(),
       });
       if (res && res.data.success) {
-        toast.success(res.data.message);
-        setTimeout(() => {
-          navigate("/login");
-        }, 1000);
+        toast.success("Password reset successful, please login");
+        navigate("/login");
       } else {
         toast.error(res.data.message);
       }
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.message || "Error in resetting password");
+      toast.error("Error in resetting password");
     } finally {
       setLoading(false);
     }
@@ -84,9 +78,21 @@ const ForgotPassword = () => {
               type="password"
               className="form-control"
               id="exampleInputPassword1"
-              placeholder="Enter New Password"
+              placeholder="Enter Your New Password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <input
+              type="password"
+              className="form-control"
+              id="exampleInputConfirmPassword1"
+              placeholder="Confirm Your New Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </div>

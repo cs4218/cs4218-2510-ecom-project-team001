@@ -46,6 +46,9 @@ window.matchMedia =
 describe('Register Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    window.localStorage.getItem.mockReset();
+    window.localStorage.setItem.mockReset();
+    window.localStorage.removeItem.mockReset();
   });
 
   it('should register the user successfully', async () => {
