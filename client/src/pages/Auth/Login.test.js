@@ -46,6 +46,9 @@ window.matchMedia =
 describe('Login Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    window.localStorage.getItem.mockReset();
+    window.localStorage.setItem.mockReset();
+    window.localStorage.removeItem.mockReset();
   });
 
   it('renders login form', () => {
