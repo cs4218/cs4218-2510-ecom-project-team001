@@ -115,7 +115,7 @@ describe('Register Component', () => {
     const answerInput = getByPlaceholderText('What is Your Favorite sports');
 
     fireEvent.change(nameInput, { target: { value: 'John Doe' } });
-    fireEvent.change(emailInput, { target: { value: 'test@example com' } });
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.change(phoneInput, { target: { value: '1234567890' } });
     fireEvent.change(addressInput, { target: { value: '123 Street' } });
@@ -123,7 +123,7 @@ describe('Register Component', () => {
     fireEvent.change(answerInput, { target: { value: 'Football' } });
 
     expect(nameInput.value).toBe('John Doe');
-    expect(emailInput.value).toBe('test@example com');
+    expect(emailInput.value).toBe('test@example.com');
     expect(passwordInput.value).toBe('password123');
     expect(phoneInput.value).toBe('1234567890');
     expect(addressInput.value).toBe('123 Street');
