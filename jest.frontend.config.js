@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   // name displayed during tests
   displayName: "frontend",
 
@@ -22,9 +22,12 @@ module.exports = {
   // only run these tests
   testMatch: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
+    "<rootDir>/client/src/context/*.test.js",
     "<rootDir>/client/src/pages/HomePage.test.js",
     "<rootDir>/client/src/pages/admin/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
+    "<rootDir>/client/src/components/Routes/Private.test.js",
+    "<rootDir>/client/src/components/UserMenu.test.js",
     "<rootDir>/client/src/pages/Policy.test.js",
     "<rootDir>/client/src/pages/CategoryProduct.test.js",
     "<rootDir>/client/src/pages/ProductDetails.test.js",
@@ -32,24 +35,33 @@ module.exports = {
     "<rootDir>/client/src/pages/Categories.test.js",
     "<rootDir>/client/src/context/cart.test.js",
     "<rootDir>/client/src/pages/CartPage.test.js",
+    "<rootDir>/client/src/pages/Pagenotfound.test.js",
+    "<rootDir>/client/src/pages/user/Dashboard.test.js",
   ],
 
   // jest code coverage
   collectCoverage: true,
   collectCoverageFrom: [
     "<rootDir>/client/src/pages/Auth/**",
+    "<rootDir>/client/src/context/**",
     "<rootDir>/client/src/pages/HomePage.js",
-    "<rootDir>/client/src/pages/Auth/*.test.js",
-    "<rootDir>/client/src/components/Form/*.test.js",
-    "<rootDir>/client/src/pages/Policy.test.js",
-    "<rootDir>/client/src/pages/CategoryProduct.test.js",
-    "<rootDir>/client/src/pages/ProductDetails.test.js",
+    "<rootDir>/client/src/components/Form/**",
+    "<rootDir>/client/src/pages/Policy.js",
+    "<rootDir>/client/src/pages/CategoryProduct.js",
+    "<rootDir>/client/src/pages/ProductDetails.js",
     "<rootDir>/client/src/hooks/useCategory.js",
     "<rootDir>/client/src/pages/Categories.js",
     "<rootDir>/client/src/context/cart.js",
     "<rootDir>/client/src/pages/CartPage.js",
     "<rootDir>/client/src/pages/admin/CreateCategory.js",
     "<rootDir>/client/src/components/Form/CategoryForm.js",
+    "<rootDir>/client/src/pages/admin/CreateProduct.js",
+    "<rootDir>/client/src/pages/admin/UpdateProduct.js",
+    "<rootDir>/client/src/pages/admin/AdminOrders.js",
+    "<rootDir>/client/src/pages/admin/Products.js",
+    "<rootDir>/client/src/components/Routes/Private.js",
+    "<rootDir>/client/src/components/UserMenu.js",
+    "<rootDir>/client/src/pages/user/Dashboard.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
@@ -63,6 +75,6 @@ module.exports = {
   // more detailed output
   verbose: true,
   reporters: ["default"],
-  silent: false,
+  silent: true,
   testLocationInResults: true,
 };
