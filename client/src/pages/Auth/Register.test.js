@@ -294,7 +294,7 @@ describe('Register Component', () => {
   });
 
   it('should not call axios.post if required fields are missing', async () => {
-    const { getByText, getByPlaceholderText } = render(
+    const { getByText } = render(
       <MemoryRouter initialEntries={['/register']}>
         <Routes>
           <Route path="/register" element={<Register />} />
