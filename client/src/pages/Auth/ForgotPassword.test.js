@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import axios from 'axios';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import '@testing-library/jest-dom/extend-expect';
 import toast from 'react-hot-toast';
 import ForgotPassword from './ForgotPassword';
@@ -24,9 +24,10 @@ jest.mock('../../context/search', () => ({
 
 jest.mock('../../hooks/useCategory', () => jest.fn(() => [])); // Mock useCategory hook to return empty arrays
 
+const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
+  useNavigate: () => mockNavigate,
 }));
 
 Object.defineProperty(window, 'localStorage', {
@@ -145,6 +146,7 @@ describe('ForgotPassword Component', () => {
 
     await waitFor(() => expect(axios.post).toHaveBeenCalled());
     expect(toast.success).toHaveBeenCalledWith('Password reset successful, please login');
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
 
   it('should show error toast on failed password reset', async () => {
@@ -201,4 +203,88 @@ describe('ForgotPassword Component', () => {
     expect(confirmPasswordInput.value).toBe('newpassword123');
     expect(answerInput.value).toBe('Football');
   });
-}); 
+
+  it('should show error toast if forgot password response is unsuccessful', async () => {
+    axios.post.mockRejectedValueOnce(new Error('Network Error'));
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/forgot-password']}>
+        <Routes>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your New Password'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(getByPlaceholderText('Confirm Your New Password'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(getByPlaceholderText('What is your favorite sport?'), {
+      target: { value: 'Football' },
+    });
+
+    fireEvent.click(getByText('SET NEW PASSWORD'));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith('Error in resetting password');
+  });
+
+  it('should not call axios.post if required fields are empty', async () => {
+    const { getByText } = render(
+      <MemoryRouter initialEntries={['/forgot-password']}>
+        <Routes>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.click(getByText('SET NEW PASSWORD'));
+
+    await waitFor(() => {
+      expect(axios.post).not.toHaveBeenCalled();
+    });
+  });
+
+  it('should trim input values before submission', async () => {
+    axios.post.mockResolvedValueOnce({ data: { success: true, message: 'Password reset successful, please login' } });
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/forgot-password']}>
+        <Routes>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), {
+      target: { value: '   test@example.com   ' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your New Password'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(getByPlaceholderText('Confirm Your New Password'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(getByPlaceholderText('What is your favorite sport?'), {
+      target: { value: '   Football   ' },
+    });
+
+    fireEvent.click(getByText('SET NEW PASSWORD'));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalledWith(
+      '/api/v1/auth/forgot-password',
+      {
+        email: 'test@example.com',
+        newPassword: 'newpassword123',
+        answer: 'Football',
+      }
+    ));
+    expect(toast.success).toHaveBeenCalledWith('Password reset successful, please login');
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+  });  
+});

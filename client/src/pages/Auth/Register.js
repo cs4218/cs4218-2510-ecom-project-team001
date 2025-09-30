@@ -23,15 +23,21 @@ const Register = () => {
   // form function
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validatePhone(phone)) {
+      toast.error("Please enter a valid phone number.");
+      return;
+    }
+
     try {
       const res = await axios.post("/api/v1/auth/register", {
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim(),
         password,
-        phone,
-        address,
+        phone: phone.trim(),
+        address: address.trim(),
         DOB,
-        answer,
+        answer: answer.trim(),
       });
       if (res && res.data.success) {
         toast.success("Register Successfully, please login");
