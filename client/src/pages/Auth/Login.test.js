@@ -88,7 +88,7 @@ describe('Login Component', () => {
   });
 
   it('should allow typing email and password', () => {
-    const { getByText, getByPlaceholderText } = render(
+    const { getByPlaceholderText } = render(
       <MemoryRouter initialEntries={['/login']}>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -290,7 +290,7 @@ describe('Login Component', () => {
       },
     });
 
-    const mockFromPath = '/admin';
+    const mockFromPath = '/dashboard';
     const mockLocation = { state: { from: { pathname: mockFromPath } } };
     useLocation.mockReturnValue(mockLocation);
 

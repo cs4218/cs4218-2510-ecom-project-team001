@@ -23,6 +23,7 @@ export default {
   testMatch: [
     "<rootDir>/client/src/pages/Auth/*.test.js",
     "<rootDir>/client/src/context/*.test.js",
+    "<rootDir>/client/src/components/AdminMenu.test.js",
     "<rootDir>/client/src/pages/HomePage.test.js",
     "<rootDir>/client/src/pages/admin/*.test.js",
     "<rootDir>/client/src/components/Form/*.test.js",
@@ -48,6 +49,8 @@ export default {
   collectCoverageFrom: [
     "<rootDir>/client/src/pages/Auth/**",
     "<rootDir>/client/src/context/**",
+    "<rootDir>/client/src/components/AdminMenu.js",
+    "<rootDir>/client/src/pages/admin/AdminDashboard.js",
     "<rootDir>/client/src/pages/HomePage.js",
     "<rootDir>/client/src/components/Form/**",
     "<rootDir>/client/src/pages/Policy.js",
