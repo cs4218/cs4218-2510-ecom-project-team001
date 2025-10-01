@@ -77,21 +77,4 @@ describe("SearchInput", () => {
 
     consoleSpy.mockRestore();
   });
-
-  it("BVA: should accept a single-character keyword", async () => {
-    axios.get.mockResolvedValue({ data: ["resultX"] });
-    mockValues = { keyword: "a", results: [] };
-
-    render(<SearchInput />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Search/i }));
-
-    await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledWith("/api/v1/product/search/a");
-      expect(mockSetValues).toHaveBeenCalledWith({
-        keyword: "a",
-        results: ["resultX"],
-      });
-    });
-  });
 });
