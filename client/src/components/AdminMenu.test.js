@@ -1,6 +1,6 @@
 import React from "react";
-import { render, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from "react-router-dom";
+import { render } from '@testing-library/react';
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 import AdminMenu from "./AdminMenu";
 
 describe("AdminMenu", () => {
@@ -10,10 +10,13 @@ describe("AdminMenu", () => {
 
   it("renders correctly", () => {
     const { getByText } = render(
-        <MemoryRouter>
-          <AdminMenu />
-        </MemoryRouter>
+      <MemoryRouter initialEntries={["/dashboard/admin"]}>
+        <Routes>
+          <Route path="/dashboard/admin" element={<AdminMenu />} />
+        </Routes>
+      </MemoryRouter>
     );
+
     expect(getByText("Admin Panel")).toBeInTheDocument();
     expect(getByText("Create Category")).toBeInTheDocument();
     expect(getByText("Create Product")).toBeInTheDocument();
@@ -24,10 +27,13 @@ describe("AdminMenu", () => {
 
   it("has correct href attributes for navigation links", () => {
     const { getByText } = render(
-      <MemoryRouter>
-        <AdminMenu />
+      <MemoryRouter initialEntries={["/dashboard/admin"]}>
+        <Routes>
+          <Route path="/dashboard/admin" element={<AdminMenu />} />
+        </Routes>
       </MemoryRouter>
     );
+
     expect(getByText("Create Category").closest("a")).toHaveAttribute("href", "/dashboard/admin/create-category");
     expect(getByText("Create Product").closest("a")).toHaveAttribute("href", "/dashboard/admin/create-product");
     expect(getByText("Products").closest("a")).toHaveAttribute("href", "/dashboard/admin/products");

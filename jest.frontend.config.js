@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   // name displayed during tests
   displayName: "frontend",
 
@@ -46,6 +46,7 @@ module.exports = {
     "<rootDir>/client/src/pages/Auth/**",
     "<rootDir>/client/src/context/**",
     "<rootDir>/client/src/components/AdminMenu.js",
+    "<rootDir>/client/src/pages/admin/AdminDashboard.js",
     "<rootDir>/client/src/pages/HomePage.js",
     "<rootDir>/client/src/components/Form/**",
     "<rootDir>/client/src/pages/Policy.js",
