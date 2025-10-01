@@ -2,6 +2,9 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import axios from "axios";
 
+
+// chatgpt is use to aid in creation of test case
+
 // mock axios globally
 jest.mock("axios");
 
