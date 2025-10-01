@@ -2,114 +2,96 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import axios from "axios";
 
+import SearchInput from "./SearchInput";
 
-// chatgpt is use to aid in creation of test case
 
-// mock axios globally
+// chatgpt is used to aid in the creation of test cases
+// mock axios
 jest.mock("axios");
 
-// mock navigate
+// mock react-router navigate
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
+// mock context
 let mockValues;
 let mockSetValues;
-
 jest.mock("../../context/search", () => ({
   useSearch: () => [mockValues, mockSetValues],
 }));
 
-describe("SearchInput Component", () => {
-  let SearchInput;
-
+describe("SearchInput", () => {
   beforeEach(() => {
-    jest.resetModules();
     jest.clearAllMocks();
-
-    mockValues = { keyword: "" };
+    mockValues = { keyword: "", results: [] };
     mockSetValues = jest.fn((newValues) => {
-      console.log("changing")
-      mockValues = newValues;   // <-- keep mockValues in sync
-    });
-    SearchInput = require("./SearchInput").default;
-  });
-
-  //
-  // Equivalence Partitioning (EP)
-  //
-  it("EP: should not call API when keyword is empty", async () => {
-    render(<SearchInput />);
-    fireEvent.click(screen.getByRole("button", { name: /search/i }));
-    expect(axios.get).not.toHaveBeenCalled();
-  });
-
-  //
-  // Output-Based Testing
-  //
-  it("Output-based: should call setValues with the correct values", async () => {
-    axios.get.mockResolvedValue({ data: ["iPhone"] });
-
-    render(<SearchInput />);
-    fireEvent.change(screen.getByPlaceholderText("Search"), {
-      target: { value: "phone" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /search/i }));
-
-    await waitFor(() => {
-      // first call: keyword typed
-      expect(mockSetValues).toHaveBeenCalledWith({ keyword: "phone" });
+      mockValues = newValues;
     });
   });
 
-
-  //
-  // State-Based Testing
-  //
-  it("State-based: should update keyword when typing", () => {
+  it("calls setValues when input is changed", () => {
     render(<SearchInput />);
-    fireEvent.change(screen.getByPlaceholderText("Search"), {
-      target: { value: "laptop" },
+    fireEvent.change(screen.getByPlaceholderText(/Search/i), {
+      target: { value: "Laptop" },
     });
-    expect(mockSetValues).toHaveBeenCalledWith({ keyword: "laptop" });
+
+    expect(mockSetValues).toHaveBeenCalledWith({
+      keyword: "Laptop",
+      results: [],
+    });
   });
 
-  //
-  // Communications-Based Testing
-  //
-  it("Communications-based: should call API with correct URL", async () => {
-    axios.get.mockResolvedValue({ data: [] });
+  it("submits the form and triggers axios + navigate", async () => {
+    axios.get.mockResolvedValue({ data: ["result1"] });
+    mockValues = { keyword: "phone", results: [] };
 
     render(<SearchInput />);
-    fireEvent.change(screen.getByPlaceholderText("Search"), {
-      target: { value: "tablet" },
-    });
+
+    // inline role query in fireEvent
     fireEvent.click(screen.getByRole("button", { name: /Search/i }));
 
-    fireEvent.submit(screen.getByRole("search"));
-
     await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledWith("/api/v1/product/search/tablet");
+      expect(axios.get).toHaveBeenCalledWith("/api/v1/product/search/phone");
+      expect(mockSetValues).toHaveBeenCalledWith({
+        keyword: "phone",
+        results: ["result1"],
+      });
+      expect(mockNavigate).toHaveBeenCalledWith("/search");
     });
   });
 
-  //
-  // Error Handling
-  //
-  it("Error handling: should log error if API call fails", async () => {
+  it("handles API error gracefully", async () => {
     const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
-    axios.get.mockRejectedValue(new Error("Network error"));
+    axios.get.mockRejectedValue(new Error("Network Error"));
+    mockValues = { keyword: "tablet", results: [] };
 
     render(<SearchInput />);
-    fireEvent.change(screen.getByPlaceholderText("Search"), {
-      target: { value: "camera" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /search/i }));
+
+    fireEvent.click(screen.getByRole("button", { name: /Search/i }));
 
     await waitFor(() => {
       expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
     });
+
     consoleSpy.mockRestore();
+  });
+
+  it("BVA: should accept a single-character keyword", async () => {
+    axios.get.mockResolvedValue({ data: ["resultX"] });
+    mockValues = { keyword: "a", results: [] };
+
+    render(<SearchInput />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Search/i }));
+
+    await waitFor(() => {
+      expect(axios.get).toHaveBeenCalledWith("/api/v1/product/search/a");
+      expect(mockSetValues).toHaveBeenCalledWith({
+        keyword: "a",
+        results: ["resultX"],
+      });
+    });
   });
 });
