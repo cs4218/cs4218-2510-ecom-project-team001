@@ -290,7 +290,7 @@ describe('Login Component', () => {
       },
     });
 
-    const mockFromPath = '/admin';
+    const mockFromPath = '/dashboard';
     const mockLocation = { state: { from: { pathname: mockFromPath } } };
     useLocation.mockReturnValue(mockLocation);
 
