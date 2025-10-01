@@ -89,6 +89,36 @@ describe("Orders Component", () => {
       expect(screen.getByText("Product B")).toBeInTheDocument();
       expect(screen.getByText(/Price : 200/)).toBeInTheDocument();
     });
+
+    it("should display 'Failed' when payment is unsuccessful", async () => {
+      const failedOrder = [
+        {
+          _id: "order2",
+          status: "Shipped",
+          buyer: { name: "Jane Smith" },
+          createAt: new Date().toISOString(),
+          payment: { success: false },
+          products: [
+            {
+              _id: "prod3",
+              name: "Product C",
+              description: "This is product C description",
+              price: 150,
+            },
+          ],
+        },
+      ];
+
+      useAuth.mockReturnValue([{ token: "valid-token" }, jest.fn()]);
+      axios.get.mockResolvedValue({ data: failedOrder });
+
+      render(<Orders />);
+
+      expect(await screen.findByText("Failed")).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+      expect(screen.getByText("Product C")).toBeInTheDocument();
+      expect(screen.getByText(/Price : 150/)).toBeInTheDocument();
+    });
   });
 
   //
