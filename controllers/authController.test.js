@@ -520,7 +520,7 @@ describe('Auth Controller', () => {
             email: "testuser@example.com",
             password: "password123",
             phone: "99999999",
-            address: "123 Test St",
+            address: "123 Street",
             answer: "Test Answer"
         };
 
@@ -707,7 +707,7 @@ describe('Auth Controller', () => {
             email: "testuser@example.com",
             password: "hashedpassword",
             phone: "99999999",
-            address: "123 Test St",
+            address: "123 Street",
             role: 0
         };
 

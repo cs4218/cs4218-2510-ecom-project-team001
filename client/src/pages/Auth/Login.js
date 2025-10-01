@@ -21,7 +21,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await axios.post("/api/v1/auth/login", {
-        email,
+        email: email.trim(),
         password,
       });
       if (res && res.data.success) {
@@ -39,7 +39,8 @@ const Login = () => {
             token: res.data.token,
         });
         localStorage.setItem("auth", JSON.stringify(res.data));
-        navigate(location.state || "/");
+        // navigate(location.state || "/");
+        navigate(location?.state?.from?.pathname || "/");
       } else {
         toast.error(res.data.message);
       }
