@@ -7,7 +7,7 @@ export default {
 
   // which test to run
   testMatch: [
-    "<rootDir>/controllers/*.test.js", 
+    "<rootDir>/controllers/*.test.js",
     "<rootDir>/helpers/*.test.js",
     "<rootDir>/middlewares/*.test.js",
     "<rootDir>/models/*.test.js"
@@ -27,10 +27,8 @@ export default {
   ], // add more files as needed
   coverageThreshold: {
     global: {
-      lines: 60,
-      functions: 60,
+      lines: 100,
+      functions: 100,
     },
   },
-
-  silent: true,
 };
