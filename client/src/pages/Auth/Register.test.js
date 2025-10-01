@@ -5,10 +5,14 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import '@testing-library/jest-dom/extend-expect';
 import toast from 'react-hot-toast';
 import Register from './Register';
+import validator from "validator";
 
 // Mocking axios.post
 jest.mock('axios');
 jest.mock('react-hot-toast');
+jest.mock('validator', () => ({
+  isMobilePhone: jest.fn(),
+}));
 
 jest.mock('../../context/auth', () => ({
   useAuth: jest.fn(() => [null, jest.fn()]), // Mock useAuth hook to return null state and a mock function for setAuth
@@ -23,6 +27,12 @@ jest.mock('../../context/search', () => ({
 }));
 
 jest.mock('../../hooks/useCategory', () => jest.fn(() => [])); // Mock useCategory hook to return empty arrays
+
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
 
 Object.defineProperty(window, 'localStorage', {
   value: {
@@ -46,6 +56,118 @@ window.matchMedia =
 describe('Register Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    window.localStorage.getItem.mockReset();
+    window.localStorage.setItem.mockReset();
+    window.localStorage.removeItem.mockReset();
+    validator.isMobilePhone.mockReturnValue(true);
+  });
+
+  it('renders register form', () => {
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    expect(getByText('REGISTER FORM')).toBeInTheDocument();
+    expect(getByPlaceholderText('Enter Your Name')).toBeInTheDocument();
+    expect(getByPlaceholderText('Enter Your Email')).toBeInTheDocument();
+    expect(getByPlaceholderText('Enter Your Password')).toBeInTheDocument();
+    expect(getByPlaceholderText('Enter Your Phone')).toBeInTheDocument();
+    expect(getByPlaceholderText('Enter Your Address')).toBeInTheDocument();
+    expect(getByPlaceholderText('Enter Your DOB')).toBeInTheDocument();
+    expect(getByPlaceholderText('What is Your Favorite sports')).toBeInTheDocument();
+  });
+
+  it('inputs should be initially empty', () => {
+    const { getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    expect(getByPlaceholderText('Enter Your Name').value).toBe('');
+    expect(getByPlaceholderText('Enter Your Email').value).toBe('');
+    expect(getByPlaceholderText('Enter Your Password').value).toBe('');
+    expect(getByPlaceholderText('Enter Your Phone').value).toBe('');
+    expect(getByPlaceholderText('Enter Your Address').value).toBe('');
+    expect(getByPlaceholderText('Enter Your DOB').value).toBe('');
+    expect(getByPlaceholderText('What is Your Favorite sports').value).toBe('');
+  });
+
+  it('should allow typing in all input fields', () => {
+    const { getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const nameInput = getByPlaceholderText('Enter Your Name');
+    const emailInput = getByPlaceholderText('Enter Your Email');
+    const passwordInput = getByPlaceholderText('Enter Your Password');
+    const phoneInput = getByPlaceholderText('Enter Your Phone');
+    const addressInput = getByPlaceholderText('Enter Your Address');
+    const dobInput = getByPlaceholderText('Enter Your DOB');
+    const answerInput = getByPlaceholderText('What is Your Favorite sports');
+
+    fireEvent.change(nameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.change(phoneInput, { target: { value: '1234567890' } });
+    fireEvent.change(addressInput, { target: { value: '123 Street' } });
+    fireEvent.change(dobInput, { target: { value: '2000-01-01' } });
+    fireEvent.change(answerInput, { target: { value: 'Football' } });
+
+    expect(nameInput.value).toBe('John Doe');
+    expect(emailInput.value).toBe('test@example.com');
+    expect(passwordInput.value).toBe('password123');
+    expect(phoneInput.value).toBe('1234567890');
+    expect(addressInput.value).toBe('123 Street');
+    expect(dobInput.value).toBe('2000-01-01');
+    expect(answerInput.value).toBe('Football');
+  });
+
+  it('should show error toast if phone number is invalid', async () => {
+    validator.isMobilePhone.mockReturnValue(false); // Mock invalid phone number
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Name'), {
+      target: { value: 'John Doe' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Phone'), {
+      target: { value: 'invalid-phone' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Address'), {
+      target: { value: '123 Street' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your DOB'), {
+      target: { value: '2000-01-01' },
+    });
+    fireEvent.change(getByPlaceholderText('What is Your Favorite sports'), {
+      target: { value: 'Football' },
+    });
+
+    fireEvent.click(getByText('REGISTER'));
+
+    await waitFor(() => expect(validator.isMobilePhone).toHaveBeenCalledWith('invalid-phone', 'any'));
+    expect(toast.error).toHaveBeenCalledWith('Please enter a valid phone number.');
   });
 
   it('should register the user successfully', async () => {
@@ -87,6 +209,7 @@ describe('Register Component', () => {
     expect(toast.success).toHaveBeenCalledWith(
       'Register Successfully, please login'
     );
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
 
   it('should display error message on failed registration', async () => {
@@ -126,5 +249,112 @@ describe('Register Component', () => {
 
     await waitFor(() => expect(axios.post).toHaveBeenCalled());
     expect(toast.error).toHaveBeenCalledWith('Something went wrong');
+  });
+
+  it('should show error toast if registration response is unsuccessful', async () => {
+    axios.post.mockResolvedValueOnce({
+      data: { success: false, message: 'User already exists' },
+    });
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Name'), {
+      target: { value: 'John Doe' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Phone'), {
+      target: { value: '1234567890' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Address'), {
+      target: { value: '123 Street' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your DOB'), {
+      target: { value: '2000-01-01' },
+    });
+    fireEvent.change(getByPlaceholderText('What is Your Favorite sports'), {
+      target: { value: 'Football' },
+    });
+
+    fireEvent.click(getByText('REGISTER'));
+
+    // await waitFor(() => expect(toast.error).toHaveBeenCalledWith('User already exists'));
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith('User already exists');
+  });
+
+  it('should not call axios.post if required fields are missing', async () => {
+    const { getByText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.click(getByText('REGISTER'));
+
+    await waitFor(() => expect(axios.post).not.toHaveBeenCalled());
+    expect(toast.error).not.toHaveBeenCalledWith('Something went wrong');
+  });
+
+  it('should trim input values before submission', async () => {
+    axios.post.mockResolvedValueOnce({ data: { success: true } });
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Name'), {
+      target: { value: '  John Doe  ' }, 
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), {
+      target: { value: '  test@example.com  ' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Phone'), {
+      target: { value: '  1234567890  ' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Address'), {
+      target: { value: '  123 Street  ' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your DOB'), {
+      target: { value: '2000-01-01' },
+    });
+    fireEvent.change(getByPlaceholderText('What is Your Favorite sports'), {
+      target: { value: '  Football  ' },
+    });
+
+    fireEvent.click(getByText('REGISTER'));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalledWith('/api/v1/auth/register', {
+      name: 'John Doe',
+      email: 'test@example.com',
+      password: 'password123',
+      phone: '1234567890',
+      address: '123 Street',
+      DOB: '2000-01-01',
+      answer: 'Football',
+    }));
+    expect(toast.success).toHaveBeenCalledWith(
+      'Register Successfully, please login'
+    );
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
 });

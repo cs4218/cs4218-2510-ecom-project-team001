@@ -4,6 +4,12 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import "../../styles/AuthStyles.css";
+import validator from "validator";
+
+const validatePhone = (phone) => {
+  return validator.isMobilePhone(phone, 'any');
+}
+
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,15 +23,21 @@ const Register = () => {
   // form function
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validatePhone(phone)) {
+      toast.error("Please enter a valid phone number.");
+      return;
+    }
+
     try {
       const res = await axios.post("/api/v1/auth/register", {
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim(),
         password,
-        phone,
-        address,
+        phone: phone.trim(),
+        address: address.trim(),
         DOB,
-        answer,
+        answer: answer.trim(),
       });
       if (res && res.data.success) {
         toast.success("Register Successfully, please login");
@@ -95,7 +107,7 @@ const Register = () => {
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="form-control"
-              id="exampleInputaddress1"
+              id="exampleInputAddress1"
               placeholder="Enter Your Address"
               required
             />
@@ -117,7 +129,7 @@ const Register = () => {
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               className="form-control"
-              id="exampleInputanswer1"
+              id="exampleInputAnswer1"
               placeholder="What is Your Favorite sports"
               required
             />
