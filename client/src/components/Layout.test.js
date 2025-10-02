@@ -20,52 +20,52 @@ jest.mock("react-hot-toast", () => ({
   Toaster: () => <div data-testid="toaster">Toaster</div>,
 }));
 
-describe('Layout Component', () => {
+describe("Layout Component", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  test('renders children content', () => {
+  test("renders children content", () => {
     render(
       <Layout>
         <div>Test Content</div>
       </Layout>
     );
     
-    expect(screen.getByText('Test Content')).toBeInTheDocument();
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
 
-  test('renders Header component', () => {
+  test("renders Header component", () => {
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
     
-    expect(screen.getByTestId('header')).toBeInTheDocument();
+    expect(screen.getByTestId("header")).toBeInTheDocument();
   });
 
-  test('renders Footer component', () => {
+  test("renders Footer component", () => {
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
     
-    expect(screen.getByTestId('footer')).toBeInTheDocument();
+    expect(screen.getByTestId("footer")).toBeInTheDocument();
   });
 
-  test('renders Toaster component', () => {
+  test("renders Toaster component", () => {
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
     
-    expect(screen.getByTestId('toaster')).toBeInTheDocument();
+    expect(screen.getByTestId("toaster")).toBeInTheDocument();
   });
 
-  test('applies default title when no title prop provided', () => {
+  test("applies default title when no title prop provided", () => {
     render(
       <Layout>
         <div>Content</div>
@@ -73,10 +73,10 @@ describe('Layout Component', () => {
     );
     
     const helmet = Helmet.peek();
-    expect(helmet.title).toBe('Ecommerce app - shop now');
+    expect(helmet.title).toBe("Ecommerce app - shop now");
   });
 
-  test('applies custom title when title prop provided', () => {
+  test("applies custom title when title prop provided", () => {
     render(
       <Layout title="Custom Title">
         <div>Content</div>
@@ -84,10 +84,10 @@ describe('Layout Component', () => {
     );
     
     const helmet = Helmet.peek();
-    expect(helmet.title).toBe('Custom Title');
+    expect(helmet.title).toBe("Custom Title");
   });
 
-  test('applies default meta tags when no props provided', () => {
+  test("applies default meta tags when no props provided", () => {
     render(
       <Layout>
         <div>Content</div>
@@ -97,25 +97,25 @@ describe('Layout Component', () => {
     const helmet = Helmet.peek();
     expect(helmet.metaTags).toContainEqual(
       expect.objectContaining({
-        name: 'description',
-        content: 'mern stack project',
+        name: "description",
+        content: "mern stack project",
       })
     );
     expect(helmet.metaTags).toContainEqual(
       expect.objectContaining({
-        name: 'keywords',
-        content: 'mern,react,node,mongodb',
+        name: "keywords",
+        content: "mern,react,node,mongodb",
       })
     );
     expect(helmet.metaTags).toContainEqual(
       expect.objectContaining({
-        name: 'author',
-        content: 'Techinfoyt',
+        name: "author",
+        content: "Techinfoyt",
       })
     );
   });
 
-  test('applies custom meta tags when props provided', () => {
+  test("applies custom meta tags when props provided", () => {
     render(
       <Layout
         description="Custom description"
@@ -129,20 +129,20 @@ describe('Layout Component', () => {
     const helmet = Helmet.peek();
     expect(helmet.metaTags).toContainEqual(
       expect.objectContaining({
-        name: 'description',
-        content: 'Custom description',
+        name: "description",
+        content: "Custom description",
       })
     );
     expect(helmet.metaTags).toContainEqual(
       expect.objectContaining({
-        name: 'keywords',
-        content: 'custom,keywords',
+        name: "keywords",
+        content: "custom,keywords",
       })
     );
     expect(helmet.metaTags).toContainEqual(
       expect.objectContaining({
-        name: 'author',
-        content: 'Custom Author',
+        name: "author",
+        content: "Custom Author",
       })
     );
   });
