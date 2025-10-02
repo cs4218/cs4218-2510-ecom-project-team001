@@ -44,7 +44,10 @@ export default {
     "<rootDir>/client/src/pages/Search.test.js",
     "<rootDir>/client/src/pages/About.test.js",
     "<rootDir>/client/src/pages/Contact.test.js",
-    "<rootDir>/client/src/components/Header.test.js"
+    "<rootDir>/client/src/components/Header.test.js",
+    "<rootDir>/client/src/components/Spinner.test.js",
+    "<rootDir>/client/src/components/Footer.test.js",
+    "<rootDir>/client/src/components/Layout.test.js",
   ],
 
   // jest code coverage
@@ -78,7 +81,10 @@ export default {
     "<rootDir>/client/src/pages/Search.js",
     "<rootDir>/client/src/pages/About.js",
     "<rootDir>/client/src/pages/Contact.js",
-    "<rootDir>/client/src/components/Header.js"
+    "<rootDir>/client/src/components/Header.js",
+    "<rootDir>/client/src/components/Spinner.js",
+    "<rootDir>/client/src/components/Footer.js",
+    "<rootDir>/client/src/components/Layout.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
