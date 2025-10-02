@@ -27,16 +27,19 @@ describe("Spinner", () => {
   });
 
   test("renders spinner with initial count of 3", () => {
+    // Arrange + Act
     render(<Spinner />);
-    
+    // Assert
     expect(screen.getByText(/redirecting to you in 3 second/i)).toBeInTheDocument();
     expect(screen.getByRole("status")).toBeInTheDocument();
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
   test("decrements count every second", async () => {
+    // Arrange + Act
     render(<Spinner />);
     
+    // Assert
     expect(screen.getByText(/redirecting to you in 3 second/i)).toBeInTheDocument();
     
     jest.advanceTimersByTime(1000);
@@ -59,8 +62,10 @@ describe("Spinner", () => {
   });
 
   test("navigates to default path 'login' when count reaches 0", async () => {
+    // Arrange + Act
     render(<Spinner />);
     
+    // Assert
     jest.advanceTimersByTime(3000);
     
     await waitFor(() => {
@@ -71,8 +76,9 @@ describe("Spinner", () => {
   });
 
   test("navigates to custom path when provided", async () => {
+    // Arrange + Act
     render(<Spinner path="home" />);
-    
+    // Assert
     jest.advanceTimersByTime(3000);
     
     await waitFor(() => {
@@ -83,11 +89,12 @@ describe("Spinner", () => {
   });
 
   test("clears interval on unmount", () => {
+    // Arrange
     const clearIntervalSpy = jest.spyOn(global, "clearInterval");
     const { unmount } = render(<Spinner />);
-    
+    // Act
     unmount();
-    
+    // Assert
     expect(clearIntervalSpy).toHaveBeenCalled();
     clearIntervalSpy.mockRestore();
   });

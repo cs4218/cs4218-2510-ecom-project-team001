@@ -26,74 +26,81 @@ describe("Layout Component", () => {
   });
 
   test("renders children content", () => {
+    // Arrange + Act
     render(
       <Layout>
         <div>Test Content</div>
       </Layout>
     );
-    
+    // Assert
     expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
 
   test("renders Header component", () => {
+    // Arrange + Act
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
-    
+    // Assert
     expect(screen.getByTestId("header")).toBeInTheDocument();
   });
 
   test("renders Footer component", () => {
+    // Arrange + Act
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
-    
+    // Assert
     expect(screen.getByTestId("footer")).toBeInTheDocument();
   });
 
   test("renders Toaster component", () => {
+    // Arrange + Act
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
-    
+    // Assert
     expect(screen.getByTestId("toaster")).toBeInTheDocument();
   });
 
   test("applies default title when no title prop provided", () => {
+    // Arrange + Act
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
-    
+    // Assert
     const helmet = Helmet.peek();
     expect(helmet.title).toBe("Ecommerce app - shop now");
   });
 
   test("applies custom title when title prop provided", () => {
+    // Arrange + Act
     render(
       <Layout title="Custom Title">
         <div>Content</div>
       </Layout>
     );
-    
+    // Assert
     const helmet = Helmet.peek();
     expect(helmet.title).toBe("Custom Title");
   });
 
   test("applies default meta tags when no props provided", () => {
+    // Arrange + Act
     render(
       <Layout>
         <div>Content</div>
       </Layout>
     );
-    
+    // Assert
     const helmet = Helmet.peek();
     expect(helmet.metaTags).toContainEqual(
       expect.objectContaining({
@@ -116,6 +123,7 @@ describe("Layout Component", () => {
   });
 
   test("applies custom meta tags when props provided", () => {
+    // Arrange + Act
     render(
       <Layout
         description="Custom description"
@@ -125,7 +133,7 @@ describe("Layout Component", () => {
         <div>Content</div>
       </Layout>
     );
-    
+    // Assert
     const helmet = Helmet.peek();
     expect(helmet.metaTags).toContainEqual(
       expect.objectContaining({

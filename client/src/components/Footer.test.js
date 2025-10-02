@@ -13,27 +13,35 @@ const renderWithRouter = (component) => {
 
 describe("Footer Component", () => {
   test("renders footer with copyright text", () => {
+    // Arrange + Act
     renderWithRouter(<Footer />);
+    // Assert
     const copyrightText = screen.getByText(/All Rights Reserved © TestingComp/i);
     expect(copyrightText).toBeInTheDocument();
   });
 
   test("renders About link with correct path", () => {
+    // Arrange + Act
     renderWithRouter(<Footer />);
+    // Assert
     const aboutLink = screen.getByRole("link", { name: /about/i });
     expect(aboutLink).toBeInTheDocument();
     expect(aboutLink).toHaveAttribute("href", "/about");
   });
 
   test("renders Contact link with correct path", () => {
+    // Arrange + Act
     renderWithRouter(<Footer />);
+    // Assert
     const contactLink = screen.getByRole("link", { name: /contact/i });
     expect(contactLink).toBeInTheDocument();
     expect(contactLink).toHaveAttribute("href", "/contact");
   });
 
   test("renders Privacy Policy link with correct path", () => {
+    // Arrange + Act
     renderWithRouter(<Footer />);
+    // Assert
     const policyLink = screen.getByRole("link", { name: /privacy policy/i });
     expect(policyLink).toBeInTheDocument();
     expect(policyLink).toHaveAttribute("href", "/policy");
