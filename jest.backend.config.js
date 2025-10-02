@@ -10,7 +10,8 @@ export default {
     "<rootDir>/controllers/*.test.js",
     "<rootDir>/helpers/*.test.js",
     "<rootDir>/middlewares/*.test.js",
-    "<rootDir>/models/*.test.js"
+    "<rootDir>/models/*.test.js",
+    "<rootDir>/config/*.test.js",
   ],
 
   // jest code coverage
@@ -23,7 +24,8 @@ export default {
     "controllers/categoryController.js",
     "controllers/productController.js",
     "controllers/authController.js",
-    "models/**"
+    "models/**",
+    "config/**",
   ], // add more files as needed
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
