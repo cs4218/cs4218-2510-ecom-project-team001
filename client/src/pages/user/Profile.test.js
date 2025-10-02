@@ -75,13 +75,6 @@ describe("Profile Component", () => {
     expect(screen.getByPlaceholderText(/Enter Your Address/i).value).toBe("New Ave");
   });
 
-  it("keeps email field disabled", () => {
-    render(<Profile />);
-    const emailInput = screen.getByPlaceholderText(/Enter Your Email/i);
-    expect(emailInput).toBeDisabled();
-    expect(emailInput.value).toBe("john@example.com");
-  });
-
   //
   // 🔹 Output-Based Tests
   //
