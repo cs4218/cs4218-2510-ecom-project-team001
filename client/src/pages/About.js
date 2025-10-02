@@ -4,11 +4,11 @@ import Layout from "./../components/Layout";
 const About = () => {
   return (
     <Layout title={"About us - Ecommerce app"}>
-      <div className="row contactus ">
+      <div className="row about">
         <div className="col-md-6 ">
           <img
             src="/images/about.jpeg"
-            alt="contactus"
+            alt="about"
             style={{ width: "100%" }}
           />
         </div>

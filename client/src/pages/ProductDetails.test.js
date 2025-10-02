@@ -194,10 +194,36 @@ describe("ProductDetails Component", () => {
     
   });
 
-  test("handles API errors gracefully", async () => {
+  test("handles API error for getProduct gracefully", async () => {
     // Arrange
     const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     mockedAxios.get.mockRejectedValue(new Error("API Error"));
+
+    // Act
+    render(
+      <RouterWrapper>
+        <ProductDetails />
+      </RouterWrapper>
+    );
+
+    // Assert
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(new Error("API Error"));
+    });
+
+    expect(await screen.findByText("Product Details")).toBeInTheDocument();
+
+    consoleSpy.mockRestore();
+  });
+
+  test("handles API error for getSimilarProduct gracefully", async () => {
+    // Arrange
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    mockedAxios.get
+      .mockResolvedValueOnce({
+        data: { product: mockProduct }
+      })
+      .mockRejectedValueOnce(new Error("API Error"));
 
     // Act
     render(
