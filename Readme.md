@@ -24,10 +24,10 @@ Tests have been written in part with the help of AI
 | **Contact** | - pages/Contact.js | | Wong Li Yuan |
 | **Policy** | - pages/Policy.js | | Wong Li Yuan |
 | **General** | - components/Footer.js<br>- components/Header.js<br>- components/Layout.js<br>- components/Spinner.js<br>- pages/About.js<br>- pages/Pagenotfound.js | - config/db.js | Wong Li Yuan |
-| **Home** | - pages/Homepage.js | | |
-| **Cart** | - context/cart.js<br>- pages/CartPage.js | | |
-| **Category** | - hooks/useCategory.js<br>- pages/Categories.js | - controllers/categoryController.js<br>1. categoryControlller<br>2. singleCategoryController<br>- models/categoryModel.js | |
-| **Payment** | | - controllers/productController.js<br>1. braintreeTokenController<br>2. brainTreePaymentController | |
+| **Home** | - pages/Homepage.js | |Wang Jingting |
+| **Cart** | - context/cart.js<br>- pages/CartPage.js | | Wang Jingting|
+| **Category** | - hooks/useCategory.js<br>- pages/Categories.js | - controllers/categoryController.js<br>1. categoryControlller<br>2. singleCategoryController<br>- models/categoryModel.js | Wang Jingting|
+| **Payment** | | - controllers/productController.js<br>1. braintreeTokenController<br>2. brainTreePaymentController | Wang Jingting|
 
 ## 1. Project Introduction
 
