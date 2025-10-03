@@ -226,6 +226,14 @@ export const productFiltersController = async (req, res) => {
       });
     }
 
+    if (radio[0] < 0 || radio[1] < 0 || radio[0] > radio[1]) {
+      return res.status(400).send({
+        success: false,
+        error: new Error("Invalid filter"),
+        message: "Invalid filter",
+      });
+    }
+
     if (checked.length > 0) args.category = checked;
     if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
     const products = await productModel.find(args);
@@ -265,6 +273,15 @@ export const productCountController = async (req, res) => {
 export const productListController = async (req, res) => {
   try {
     const perPage = 6;
+    
+    if (req.params.page != undefined && req.params.page < 1) {
+      return res.status(400).send({
+        success: false,
+        error: new Error("Page number should be greater than 0"),
+        message: "Page number should be greater than 0",
+      });
+    }
+    
     const page = req.params.page ? req.params.page : 1;
     const products = await productModel
       .find({})

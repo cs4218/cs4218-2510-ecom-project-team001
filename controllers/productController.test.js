@@ -365,6 +365,8 @@ describe("Product Controller Tests", () => {
   });
 
   describe("productFiltersController", () => {
+    // Equivalence partitioning is used to divide the input filters into partitions
+    // for test case generation
     test("should filter products successfully", async () => {
       // Arrange
       const mockProducts = [mockProduct];
@@ -404,10 +406,89 @@ describe("Product Controller Tests", () => {
       });
     });
 
+    test("should handle invalid price range where min > max", async () => {
+      // Arrange
+      req.body.checked = [];
+      req.body.radio = [500, 100]; // Invalid: min > max
+      const error = new Error("Invalid filter");
+
+      // Act
+      await productFiltersController(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Invalid filter",
+          error,
+        })
+      );
+    });
+
+
+    test("should handle negative price values", async () => {
+      // Arrange
+      req.body.checked = [];
+      req.body.radio = [-100, 500];
+      const error = new Error("Invalid filter");
+
+      // Act
+      await productFiltersController(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Invalid filter",
+          error,
+        })
+      );
+    });
+
+    test("should handle invalid price range but valid category", async () => {
+      // Arrange
+      req.body.radio = [-500, 100]; // Invalid: min > max
+      const error = new Error("Invalid filter");
+
+      // Act
+      await productFiltersController(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Invalid filter",
+          error,
+        })
+      );
+    });
+
+    test("should handle valid price range but invalid category", async () => {
+      // Arrange
+      req.body.checked = "invalid category";
+      const error = new Error("Invalid filter");
+
+      // Act
+      await productFiltersController(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Invalid filter",
+          error,
+        })
+      );
+    });
+
     test("should handle invalid filters", async () => {
       // Arrange
       req.body.checked = "invalid-category";
-      req.body.radio = (100, 500);
+      req.body.radio = [1,2,3];
       const error = new Error("Invalid filter");
       productModel.find = jest.fn().mockRejectedValue(error);
 
@@ -1013,7 +1094,9 @@ describe("Product Controller Tests", () => {
   });
 
   describe("productListController", () => {
-    test("should return paginated products successfully with default page number", async () => {
+    // Boundary Value Analysis for page numbers
+    // Boundary value: page number 1
+    test("should return paginated products successfully with default page number 1", async () => {
       // Arrange
       req.params.page = undefined;
 
@@ -1044,6 +1127,7 @@ describe("Product Controller Tests", () => {
       });
     });
 
+    // Above boundary value: page number 2
     test("should return paginated products successfully with custom page number", async () => {
       // Arrange
       req.params.page = 2;
@@ -1074,6 +1158,24 @@ describe("Product Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith({
         success: true,
         products: mockProducts,
+      });
+    });
+
+    // Below boundary value: page number 0
+    test("should return 400 with page number 0", async () => {
+      // Arrange
+      req.params.page = 0;
+      const error = new Error("Page number should be greater than 0");
+
+      // Act
+      await productListController(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        message: "Page number should be greater than 0",
+        error,
       });
     });
 
@@ -1166,6 +1268,7 @@ describe("Product Controller Tests", () => {
   });
 
   describe("realtedProductController", () => {
+    // Equivalence partitioning on cid and pid
     test("should return related products successfully", async () => {
       // Arrange
       const mockProducts = [mockProduct];
@@ -1189,6 +1292,40 @@ describe("Product Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith({
         success: true,
         products: mockProducts,
+      });
+    });
+
+    test("should handle missing category id", async () => {
+      // Arrange
+      req.params.pid = undefined;
+      const error = new Error("Product id and category id are required");
+
+      // Act
+      await realtedProductController(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        error: error,
+        message: "Product id and category id are required",
+      });
+    });
+
+    test("should handle missing product id", async () => {
+      // Arrange
+      req.params.cid = undefined;
+      const error = new Error("Product id and category id are required");
+
+      // Act
+      await realtedProductController(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith({
+        success: false,
+        error: error,
+        message: "Product id and category id are required",
       });
     });
 
