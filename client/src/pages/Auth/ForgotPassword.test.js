@@ -286,5 +286,32 @@ describe('ForgotPassword Component', () => {
     ));
     expect(toast.success).toHaveBeenCalledWith('Password reset successful, please login');
     expect(mockNavigate).toHaveBeenCalledWith('/login');
-  });  
+  });
+
+  it('should display loading state on the submit button during form submission', async () => {
+    axios.post.mockReturnValue(new Promise(() => {}));
+
+    const { getByRole, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/forgot-password']}>
+        <Routes>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'test@example.com' } });
+    fireEvent.change(getByPlaceholderText('What is your favorite sport?'), { target: { value: 'Football' } });
+    fireEvent.change(getByPlaceholderText('Enter Your New Password'), { target: { value: 'password123' } });
+    fireEvent.change(getByPlaceholderText('Confirm Your New Password'), { target: { value: 'password123' } });
+
+    const submitButton = getByRole('button', { name: /set new password/i });
+
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      const loadingButton = getByRole('button', { name: /processing.../i });
+      expect(loadingButton).toBeInTheDocument();
+      expect(loadingButton).toBeDisabled();
+    });
+  });
 });
