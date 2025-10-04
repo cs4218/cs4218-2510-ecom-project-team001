@@ -45,19 +45,20 @@ describe("CategoryProduct Component", () => {
         name: "Laptop",
         slug: "laptop",
         price: 999.99,
-        description: "High performance laptop with excellent features for work and gaming"
+        description: "High performance laptop with great features for games and fun"
       },
       {
         _id: "prod2",
         name: "Smartphone",
         slug: "smartphone",
         price: 699.99,
-        description: "Latest smartphone with advanced camera and fast processor"
+        description: "Latest smartphone with advanced cameras and fast processors"
       }
     ]
   };
 
   describe("Component Rendering", () => {
+    // Equivalence partitioning on the loading states and product arrays
     test("renders loading state initially", () => {
       // Arrange
       mockedAxios.get.mockImplementation(() => new Promise(() => {})); // Never resolves
@@ -154,9 +155,42 @@ describe("CategoryProduct Component", () => {
       expect(await screen.findByText("0 result found")).toBeInTheDocument();
     });
 
-    test("truncates product descriptions correctly", async () => {
+    // Boundary value analysis used
+    test.each([
+      {
+        description: "truncates descriptions > 60 (61) chars", // Above boundary value
+        productDescription: "High performance laptop with great features for games and fun activities",
+        expectedText: "High performance laptop with great features for games and fu...",
+      },
+      {
+        description: "keeps descriptions <= 60 chars unchanged (59 chars)", // Below boundary value
+        productDescription: "Latest smartphone with advanced cameras and fast processors",
+        expectedText: "Latest smartphone with advanced cameras and fast processors",
+      },
+      {
+        description: "keeps descriptions at exactly 60 chars unchanged", // Boundary value
+        productDescription: "Hybrid consoles for handheld and TV gaming fun 60 word count",
+        expectedText: "Hybrid consoles for handheld and TV gaming fun 60 word count",
+      },
+    ])("$description", async ({ productDescription, expectedText }) => {
       // Arrange
-      mockedAxios.get.mockResolvedValue({ data: mockCategoryData });
+      const mockProductData = {
+        category: {
+          _id: "cat1",
+          name: "Electronics",
+          slug: "electronics"
+        },
+        products: [
+          {
+            _id: "product",
+            name: "product",
+            slug: "product",
+            price: 899.99,
+            description: productDescription,
+          },
+        ],
+      };
+      mockedAxios.get.mockResolvedValue({ data: mockProductData });
 
       // Act
       render(
@@ -166,18 +200,8 @@ describe("CategoryProduct Component", () => {
       );
 
       // Assert
-      // This is > 60 chars
-      const laptopText = await screen.findByText(
-       "High performance laptop with excellent features for work and..."
-      );
-
-      // This is <= 60 chars
-      const smartphoneText = await screen.findByText(
-       "Latest smartphone with advanced camera and fast processor"
-      );
-
-      expect(laptopText).toBeInTheDocument();
-      expect(smartphoneText).toBeInTheDocument();
+      const text = await screen.findByText(expectedText);
+      expect(text).toBeInTheDocument();
     });
 
     test("renders product images with correct src and alt attributes", async () => {

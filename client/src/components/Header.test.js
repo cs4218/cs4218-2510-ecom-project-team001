@@ -22,6 +22,7 @@ jest.mock("react-router-dom", () => ({
 
 describe("Header Component", () => {
   const mockSetAuth = jest.fn();
+  const mockSetCart = jest.fn();
   const mockCategories = [
     { _id: "1", name: "Electronics", slug: "electronics" },
     { _id: "2", name: "Clothing", slug: "clothing" },
@@ -55,7 +56,7 @@ describe("Header Component", () => {
 
   const renderHeader = (authState = null, cartItems = []) => {
     useAuth.mockReturnValue([authState, mockSetAuth]);
-    useCart.mockReturnValue([cartItems]);
+    useCart.mockReturnValue([cartItems, mockSetCart]);
 
     return render(
       <MemoryRouter>
@@ -241,8 +242,14 @@ describe("Header Component", () => {
       token: "fake-token-123",
     };
 
+    const mockCartItems = [
+      { _id: "1", name: "Product 1", price: 100, description: "Desc 1" },
+      { _id: "2", name: "Product 2", price: 200, description: "Desc 2" },
+    ];
+
     beforeEach(() => {
       localStorage.setItem("auth", JSON.stringify(mockAuthState));
+      localStorage.setItem("cart", JSON.stringify(mockCartItems));
     });
 
     test("calls handleLogout when logout link is clicked", () => {
@@ -257,9 +264,10 @@ describe("Header Component", () => {
         user: null,
         token: "",
       });
+      expect(mockSetCart).toHaveBeenCalledWith([]);
     });
 
-    test("removes auth from localStorage on logout", () => {
+    test("removes auth and cart from localStorage on logout", () => {
       // Arrange + Act
       renderHeader(mockAuthState);
       const logoutLink = screen.getByRole("link", { name: /logout/i });
@@ -267,6 +275,7 @@ describe("Header Component", () => {
 
       // Assert
       expect(localStorage.getItem("auth")).toBeNull();
+      expect(localStorage.getItem("cart")).toBeNull();
     });
 
     test("shows success toast on logout", () => {
