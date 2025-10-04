@@ -9,7 +9,7 @@ import { Badge } from "antd";
 import "../styles/Header.css";
 const Header = () => {
   const [auth, setAuth] = useAuth();
-  const [cart] = useCart();
+  const [cart, setCart] = useCart();
   const categories = useCategory();
   const handleLogout = () => {
     setAuth({
@@ -18,6 +18,9 @@ const Header = () => {
       token: "",
     });
     localStorage.removeItem("auth");
+    // Should clear the cart after logout so that next user will not inherit the cart
+    setCart([]);
+    localStorage.removeItem("cart");
     toast.success("Logout Successfully");
   };
   return (
