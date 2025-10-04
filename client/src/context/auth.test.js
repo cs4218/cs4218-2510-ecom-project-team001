@@ -24,6 +24,23 @@ const TestAuthComponent = () => {
     );
 };
 
+const TestAuthComponentLogout = () => {
+    const [auth, setAuth] = useAuth();
+
+    const handleLogout = () => {
+        setAuth({ user: null, token: '' });
+        window.localStorage.removeItem('auth');
+    };
+    
+    return (
+        <div>
+            <p data-testid="auth-value">{JSON.stringify(auth)}</p>
+            <button onClick={() => setAuth({ user: 'testuser', token: 'testtoken' })}>Set Auth</button>
+            <button onClick={handleLogout}>Logout</button>
+        </div>
+    );
+}
+
 describe('AuthProvider', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -98,5 +115,30 @@ describe('AuthProvider', () => {
         expect(window.localStorage.getItem).toHaveBeenCalledWith('auth');
         expect(getByTestId('auth-value').textContent).toContain('"user":null');
         expect(getByTestId('auth-value').textContent).toContain('"token":""');
+    });
+
+    it('clears auth state on logout', () => {
+        const { getByTestId, getByText } = render(
+            <AuthProvider>
+                <TestAuthComponentLogout />
+            </AuthProvider>
+        );
+
+        act(() => {
+            getByText('Set Auth').click();
+        });
+
+        expect(getByTestId('auth-value').textContent).toContain('"user":"testuser"');
+        expect(getByTestId('auth-value').textContent).toContain('"token":"testtoken"');
+        expect(axios.defaults.headers.common["Authorization"]).toBe("testtoken");
+
+        act(() => {
+            getByText('Logout').click();
+        });
+
+        expect(getByTestId('auth-value').textContent).toContain('"user":null');
+        expect(getByTestId('auth-value').textContent).toContain('"token":""');
+        expect(window.localStorage.removeItem).toHaveBeenCalledWith('auth');
+        expect(axios.defaults.headers.common["Authorization"]).toBe("");
     });
 });
