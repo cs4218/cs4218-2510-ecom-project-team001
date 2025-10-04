@@ -291,7 +291,7 @@ describe('ForgotPassword Component', () => {
   it('should display loading state on the submit button during form submission', async () => {
     axios.post.mockReturnValue(new Promise(() => {}));
 
-    const { getByRole, getByPlaceholderText } = render(
+    const { getByText, getByPlaceholderText } = render(
       <MemoryRouter initialEntries={['/forgot-password']}>
         <Routes>
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -304,14 +304,76 @@ describe('ForgotPassword Component', () => {
     fireEvent.change(getByPlaceholderText('Enter Your New Password'), { target: { value: 'password123' } });
     fireEvent.change(getByPlaceholderText('Confirm Your New Password'), { target: { value: 'password123' } });
 
-    const submitButton = getByRole('button', { name: /set new password/i });
-
-    fireEvent.click(submitButton);
+    fireEvent.click(getByText('SET NEW PASSWORD'));
 
     await waitFor(() => {
-      const loadingButton = getByRole('button', { name: /processing.../i });
+      const loadingButton = getByText('Processing...');
       expect(loadingButton).toBeInTheDocument();
       expect(loadingButton).toBeDisabled();
+    });
+  });
+
+  it('should transition loading state from true to false on successful submission', async () => {
+    axios.post.mockResolvedValueOnce({ data: { success: true, message: 'Password reset successful, please login' } });
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/forgot-password']}>
+        <Routes>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'test@example.com' } });
+    fireEvent.change(getByPlaceholderText('Enter Your New Password'), { target: { value: 'password123' } });
+    fireEvent.change(getByPlaceholderText('Confirm Your New Password'), { target: { value: 'password123' } });
+    fireEvent.change(getByPlaceholderText('What is your favorite sport?'), { target: { value: 'Football' } });
+    
+    fireEvent.click(getByText('SET NEW PASSWORD'));
+
+    // Assert (Loading: TRUE)
+    const loadingButton = getByText('Processing...');
+    expect(loadingButton).toBeDisabled();
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+
+    // Assert (Loading: FALSE)
+    await waitFor(() => {
+      const submitButton = getByText('SET NEW PASSWORD');
+      expect(submitButton).toBeInTheDocument();
+      expect(submitButton).toBeEnabled();
+    });
+  });
+
+  it('should transition loading state from true to false on failed submission', async () => {
+    axios.post.mockRejectedValueOnce(new Error('Network Error'));
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/forgot-password']}>
+        <Routes>
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'test@example.com' } });
+    fireEvent.change(getByPlaceholderText('Enter Your New Password'), { target: { value: 'password123' } });
+    fireEvent.change(getByPlaceholderText('Confirm Your New Password'), { target: { value: 'password123' } });
+    fireEvent.change(getByPlaceholderText('What is your favorite sport?'), { target: { value: 'Football' } });
+    
+    fireEvent.click(getByText('SET NEW PASSWORD'));
+
+    // Assert (Loading: TRUE)
+    const loadingButton = getByText('Processing...');
+    expect(loadingButton).toBeDisabled();
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+
+    // Assert (Loading: FALSE)
+    await waitFor(() => {
+      const submitButton = getByText('SET NEW PASSWORD');
+      expect(submitButton).toBeInTheDocument();
+      expect(submitButton).toBeEnabled();
     });
   });
 });
