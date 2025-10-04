@@ -39,7 +39,7 @@ const TestAuthComponentLogout = () => {
             <button onClick={handleLogout}>Logout</button>
         </div>
     );
-}
+};
 
 describe('AuthProvider', () => {
     beforeEach(() => {
