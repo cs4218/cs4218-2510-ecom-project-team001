@@ -10,6 +10,17 @@ const validatePhone = (phone) => {
   return validator.isMobilePhone(phone, 'any');
 }
 
+const isFutureDate = (dateString) => {
+  const parts = dateString.split('-');
+  const [y, m, d] = parts.map(Number);
+  const inputDate = new Date(y, m - 1, d);
+
+  const today = new Date();
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  return inputDate.getTime() > todayDate.getTime();
+};
+
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,8 +35,15 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validatePhone(phone)) {
+    const phoneTrimmed = phone.trim();
+    if (!validatePhone(phoneTrimmed)) {
       toast.error("Please enter a valid phone number.");
+      return;
+    }
+
+    // Check if DOB is a future date
+    if (isFutureDate(DOB)) {
+      toast.error("Date of birth cannot be a future date.");
       return;
     }
 
@@ -34,7 +52,7 @@ const Register = () => {
         name: name.trim(),
         email: email.trim(),
         password,
-        phone: phone.trim(),
+        phone: phoneTrimmed,
         address: address.trim(),
         DOB,
         answer: answer.trim(),
