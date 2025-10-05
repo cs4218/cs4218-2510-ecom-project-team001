@@ -764,7 +764,7 @@ describe('Auth Controller', () => {
             expect(res.status).toHaveBeenCalledWith(404);
             expect(res.send).toHaveBeenCalledWith({
                 success: false,
-                message: "Email is not registerd"
+                message: "Email is not registered"
             });
         });
 

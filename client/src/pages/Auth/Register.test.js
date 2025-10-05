@@ -168,6 +168,7 @@ describe('Register Component', () => {
 
     await waitFor(() => expect(validator.isMobilePhone).toHaveBeenCalledWith('invalid-phone', 'any'));
     expect(toast.error).toHaveBeenCalledWith('Please enter a valid phone number.');
+    expect(axios.post).not.toHaveBeenCalled();
   });
 
   it('should register the user successfully', async () => {
@@ -288,7 +289,6 @@ describe('Register Component', () => {
 
     fireEvent.click(getByText('REGISTER'));
 
-    // await waitFor(() => expect(toast.error).toHaveBeenCalledWith('User already exists'));
     await waitFor(() => expect(axios.post).toHaveBeenCalled());
     expect(toast.error).toHaveBeenCalledWith('User already exists');
   });
@@ -352,6 +352,150 @@ describe('Register Component', () => {
       DOB: '2000-01-01',
       answer: 'Football',
     }));
+    expect(toast.success).toHaveBeenCalledWith(
+      'Register Successfully, please login'
+    );
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+  });
+
+  it('should show error toast if DOB is a future date', async () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = [
+      tomorrow.getFullYear(),
+      String(tomorrow.getMonth() + 1).padStart(2, '0'),
+      String(tomorrow.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Name'), {
+      target: { value: 'John Doe' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Phone'), {
+      target: { value: '1234567890' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Address'), {
+      target: { value: '123 Street' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your DOB'), {
+      target: { value: tomorrowStr },
+    });
+    fireEvent.change(getByPlaceholderText('What is Your Favorite sports'), {
+      target: { value: 'Football' },
+    });
+
+    fireEvent.click(getByText('REGISTER'));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Date of birth cannot be a future date.'));
+    expect(axios.post).not.toHaveBeenCalled();
+  });
+
+  it('should register the user successfully with yesterday as DOB', async () => {
+    axios.post.mockResolvedValueOnce({ data: { success: true } });
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = [
+      yesterday.getFullYear(),
+      String(yesterday.getMonth() + 1).padStart(2, '0'),
+      String(yesterday.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Name'), {
+      target: { value: 'John Doe' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Phone'), {
+      target: { value: '1234567890' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Address'), {
+      target: { value: '123 Street' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your DOB'), {
+      target: { value: yesterdayStr },
+    });
+    fireEvent.change(getByPlaceholderText('What is Your Favorite sports'), {
+      target: { value: 'Football' },
+    });
+
+    fireEvent.click(getByText('REGISTER'));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+    expect(toast.success).toHaveBeenCalledWith(
+      'Register Successfully, please login'
+    );
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+  });
+
+  it('should register the user successfully with today as DOB', async () => {
+    axios.post.mockResolvedValueOnce({ data: { success: true } });
+
+    const today = new Date();
+    const todayStr = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    const { getByText, getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText('Enter Your Name'), {
+      target: { value: 'John Doe' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Email'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Password'), {
+      target: { value: 'password123' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Phone'), {
+      target: { value: '1234567890' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your Address'), {
+      target: { value: '123 Street' },
+    });
+    fireEvent.change(getByPlaceholderText('Enter Your DOB'), {
+      target: { value: todayStr },
+    });
+    fireEvent.change(getByPlaceholderText('What is Your Favorite sports'), {
+      target: { value: 'Football' },
+    });
+
+    fireEvent.click(getByText('REGISTER'));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
     expect(toast.success).toHaveBeenCalledWith(
       'Register Successfully, please login'
     );
