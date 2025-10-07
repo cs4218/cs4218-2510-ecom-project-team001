@@ -20,3 +20,7 @@ settings.json
 
 coverage/**/*
 notes.txt
+
+# Playwright
+/playwright/.auth/
+/playwright-report
