@@ -53,4 +53,8 @@ router.put(
   orderStatusController
 );
 
+router.get("/health", (_, res) => {
+  res.status(200).send({ ok: true });
+});
+
 export default router;
