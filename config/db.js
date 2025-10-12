@@ -3,10 +3,8 @@ import colors from "colors";
 
 const connectDB = async () => {
   try {
-    const isTest = process.env.NODE_ENV === "test";
-
-    if (isTest) return;
-
+    // TODO: Would disable connecting to real DB when running tests,
+    // but a test depends on this logic.
     const mongoUrl = process.env.MONGO_URL;
 
     const conn = await mongoose.connect(mongoUrl);
