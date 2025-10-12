@@ -139,6 +139,18 @@ To download and use the MERN (MongoDB, Express.js, React.js, Node.js) app from G
 Unit testing is a crucial aspect of software development aimed at verifying the functionality of individual units or components of a software application. It involves isolating these units and subjecting them to various test scenarios to ensure their correctness.  
 Jest is a popular JavaScript testing framework widely used for unit testing. It offers a simple and efficient way to write and execute tests in JavaScript projects.
 
+## 6. Integration Testing with Jest
+
+- Add your tests to `tests/integration/`, and update `jest.frontend.integration.config.js` etc.
+
+## 7. UI Testing with PlayWright
+
+- Add your tests to `tests/ui`. `tests/ui/globalSetup.js` is to login before each any test run.
+  To ensure this is working properly, do the following:
+  - Add a `TEST_EMAIL` and `TEST_PASSWORD` present in the corresponding MONGO_URL, in `.env`
+  - `npx playwright test --ui` should generate a file `tests/ui/.auth/user.json`. This file will
+    store your session auth token.
+
 ### Getting Started with Jest
 
 To begin unit testing with Jest in your project, follow these steps:

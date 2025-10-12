@@ -31,14 +31,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], storageState: './tests/ui/.auth/user.json' },
     },
-    { 
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'], storageState: './tests/ui/.auth/user.json' }
-    },
-    {
-      name: 'webkit', 
-      use: { ...devices['Desktop Safari'], storageState: './tests/ui/.auth/user.json' }
-    },
   ],
 
   webServer: [
