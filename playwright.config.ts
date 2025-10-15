@@ -23,22 +23,29 @@ export default defineConfig({
     actionTimeout: 0,
     baseURL: "http://127.0.0.1:3000",
     trace: "on-first-retry",
-    storageState: "./tests/ui/.auth/user.json",
+    storageState: "./tests/ui/.auth/user.json", // Default user session
   },
 
   projects: [
     {
-      name: "chromium",
+      name: "chromium-user",
       use: {
         ...devices["Desktop Chrome"],
         storageState: "./tests/ui/.auth/user.json",
+      },
+    },
+    {
+      name: "chromium-admin",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "./tests/ui/.auth/admin.json",
       },
     },
   ],
 
   webServer: [
     {
-      // Backend API server (Express)
+      // Backend API server
       command: "npm run server",
       cwd: "./",
       url: "http://127.0.0.1:6060/api/v1/auth/health",
@@ -51,7 +58,7 @@ export default defineConfig({
       },
     },
     {
-      // Frontend dev server (CRA)
+      // Frontend dev server
       command: "npm start",
       cwd: "./client",
       url: "http://127.0.0.1:3000/health.txt",
