@@ -143,3 +143,90 @@ describe("productController integration", () => {
     expect(deleted).toBeNull();
   });
 });
+
+/*
+chatgpt is used to aid in creation of the test cases below
+
+=====================================================
+Integration testing involving
+1. components/SearchInput.js
+2. controllers/productController.js (searchProductController)
+3. /models/productModel.js
+=====================================================
+
+*/
+describe("searchProductController integration", () => {
+  test("GET /api/v1/product/search/:keyword should return matching products (200)", async () => {
+    // Arrange: create sample products
+    await productModel.create({
+      name: "Wireless Mouse",
+      slug: slugify("Wireless Mouse"),
+      description: "A smooth and fast mouse for productivity",
+      price: 39,
+      category: gadgetCategory._id,
+      quantity: 12,
+      shipping: true,
+    });
+
+    await productModel.create({
+      name: "Mechanical Keyboard",
+      slug: slugify("Mechanical Keyboard"),
+      description: "Tactile switches for better typing experience",
+      price: 99,
+      category: gadgetCategory._id,
+      quantity: 8,
+      shipping: false,
+    });
+
+    // Act: send relevant api request
+    const res = await request(app).get("/api/v1/product/search/mouse");
+
+    // Assert: check correct behaviour and correct returned objects
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].name).toBe("Wireless Mouse");
+    expect(res.body[0]).not.toHaveProperty("photo");
+  });
+
+  test("GET /api/v1/product/search/:keyword should return empty array when no matches (200)", async () => {
+    // Arrange: no relevant product
+
+    // Act: send relevant api request
+    const res = await request(app).get("/api/v1/product/search/camera");
+
+    // Assert: check correct behaviour and correct returned objects
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(0);
+  });
+
+  test("GET /api/v1/product/search/:keyword should return 404 when keyword missing", async () => {
+    // Arrange: no keyword provided
+
+    // Act: send relevant api request
+    const res = await request(app).get("/api/v1/product/search/");
+
+    // Assert: check correct behaviour and correct returned objects
+    expect(res.status).toBe(404);
+  });
+
+  test("GET /api/v1/product/search/:keyword should handle DB error gracefully (500)", async () => {
+    // Arrange: simulate DB failure
+    const spy = jest.spyOn(productModel, "find").mockReturnValue({
+      select: () => Promise.reject("DB crashed"),
+    });
+
+    // Act: send relevant api request
+    const res = await request(app).get("/api/v1/product/search/mouse");
+
+    // Assert: check correct behaviour and correct returned objects
+    expect(res.status).toBe(500);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: "Error in Search Product API",
+    });
+
+    spy.mockRestore();
+  });
+});
