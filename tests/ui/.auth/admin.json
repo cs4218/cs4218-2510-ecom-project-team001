@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:3000",
+      "localStorage": [
+        {
+          "name": "auth",
+          "value": "{\"success\":true,\"message\":\"login successfully\",\"user\":{\"_id\":\"671cf647ef5cf60493cce8f5\",\"name\":\"MyAdmin\",\"email\":\"admin@admin.com\",\"phone\":\"81234567\",\"address\":\"admin's address\",\"role\":1},\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzFjZjY0N2VmNWNmNjA0OTNjY2U4ZjUiLCJpYXQiOjE3NjA1MjI4MTYsImV4cCI6MTc2MTEyNzYxNn0.OZPtqs_cejDvVjhcTthaXFzwvWIm9V_5FvVJfjbacJ4\"}"
+        }
+      ]
+    }
+  ]
+}
