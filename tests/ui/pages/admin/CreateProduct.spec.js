@@ -4,6 +4,25 @@ import { test, expect } from "@playwright/test";
 test.describe.configure({ mode: "parallel" });
 
 test.describe("Create Product Page", () => {
+  let context;
+  let page;
+
+  test.beforeAll(async ({ browser }) => {
+    context = await browser.newContext();  
+    page = await context.newPage();
+  });
+
+  test.afterAll(async () => {
+    // Clean up - delete the product created so it doesn't affect future tests
+    await page.goto("/dashboard/admin/product/Nature-Book");
+    page.on('dialog', async dialog => {
+      await dialog.accept('yes');
+    });
+    await page.getByRole("button", { name: "DELETE PRODUCT" }).click();
+    await page.goto("/dashboard/admin/products");
+    await expect(page.getByText("Nature Book")).not.toBeVisible();
+  });
+  
   test("should allow me to create a product when all fields filled in", async ({
     page,
   }) => {
@@ -22,7 +41,7 @@ test.describe("Create Product Page", () => {
     await page.getByText("Upload Photo").click();
     await page
       .getByLabel("Upload Photo")
-      .setInputFiles("tests/fixtures/photo.png");
+      .setInputFiles("tests/fixtures/test-photo.jpg");
     // Preview shows up
     await expect(
       page.getByRole("img", { name: "product_photo" })

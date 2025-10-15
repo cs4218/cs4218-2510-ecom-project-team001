@@ -98,7 +98,7 @@ const CartPage = () => {
         </div>
         <div className="container ">
           <div className="row ">
-            <div className="col-md-7  p-0 m-0">
+            <div className="col-md-7  p-0 m-0" aria-label="cart-list">
               {cart?.map((p) => (
                 <div className="row card flex-row" key={p._id}>
                   <div className="col-md-4">
