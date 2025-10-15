@@ -189,6 +189,51 @@ describe("searchProductController integration", () => {
     expect(res.body[0]).not.toHaveProperty("photo");
   });
 
+  test("GET /api/v1/product/search/:keyword should return multiple products when more than one match (200)", async () => {
+    // Arrange: create multiple products sharing the keyword "Mouse"
+    await productModel.create({
+      name: "Wireless Mouse",
+      slug: slugify("Wireless Mouse"),
+      description: "A smooth and fast mouse for productivity",
+      price: 39,
+      category: gadgetCategory._id,
+      quantity: 12,
+      shipping: true,
+    });
+
+    await productModel.create({
+      name: "Gaming Mousepad",
+      slug: slugify("Gaming Mousepad"),
+      description: "A high-precision surface for mouse tracking",
+      price: 15,
+      category: gadgetCategory._id,
+      quantity: 20,
+      shipping: true,
+    });
+
+    await productModel.create({
+      name: "Mechanical Keyboard",
+      slug: slugify("Mechanical Keyboard"),
+      description: "Tactile switches for better typing experience",
+      price: 99,
+      category: gadgetCategory._id,
+      quantity: 8,
+      shipping: false,
+    });
+
+    // Act: send relevant api request
+    const res = await request(app).get("/api/v1/product/search/mouse");
+
+    // Assert: check correct behaviour and correct returned objects
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(2); // should find both "Wireless Mouse" and "Gaming Mousepad"
+    const names = res.body.map((p) => p.name);
+    expect(names).toEqual(
+      expect.arrayContaining(["Wireless Mouse", "Gaming Mousepad"])
+    );
+  });
+
   test("GET /api/v1/product/search/:keyword should return empty array when no matches (200)", async () => {
     // Arrange: no relevant product
 
@@ -212,7 +257,7 @@ describe("searchProductController integration", () => {
   });
 
   test("GET /api/v1/product/search/:keyword should handle DB error gracefully (500)", async () => {
-    // Arrange: simulate DB failure
+    // Arrange: simulate DB failure safely
     const spy = jest.spyOn(productModel, "find").mockReturnValue({
       select: () => Promise.reject("DB crashed"),
     });
