@@ -1,28 +1,34 @@
-import { test, expect } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
+// For normal user
+export const testUser = base.extend({
+    storageState: "tests/ui/.auth/user.json",
+});
+
+
+testUser.beforeEach(async ({ page }) => {
     // logout of the admin account and enter the user account
-    await page.goto("/dashboard/admin/]");
-    await page.getByRole('button', { name: 'MYADMIN' }).click();
-    await page.getByRole('link', { name: 'Logout' }).click();
-    await page.getByRole('textbox', { name: 'Enter Your Email' }).fill('cs4218@test.com');
-    await page.getByRole('textbox', { name: 'Enter Your Password' }).click();
-    await page.getByRole('textbox', { name: 'Enter Your Password' }).fill('cs4218@test.com');
-    await page.getByRole('button', { name: 'LOGIN' }).click();
-
+    // await page.goto("/dashboard/admin/]");
+    // await page.getByRole('button', { name: 'MYADMIN' }).click();
+    // await page.getByRole('link', { name: 'Logout' }).click();
+    // await page.getByRole('textbox', { name: 'Enter Your Email' }).fill('cs4218@test.com');
+    // await page.getByRole('textbox', { name: 'Enter Your Password' }).click();
+    // await page.getByRole('textbox', { name: 'Enter Your Password' }).fill('cs4218@test.com');
+    // await page.getByRole('button', { name: 'LOGIN' }).click();
+    await page.goto("/");
     await page.getByRole('button', { name: 'CS 4218 Test Account' }).click();
     await page.getByRole('link', { name: 'Dashboard' }).click();
     await page.getByRole('link', { name: 'Profile' }).click();
 })
 
-test('should return error if password length < 6', async ({ page }) => {
+testUser('should return error if password length < 6', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Enter Your Password' }).click();
     await page.getByRole('textbox', { name: 'Enter Your Password' }).fill('123');
     await page.getByRole('button', { name: 'UPDATE' }).click();
     await expect(page.locator('div').filter({ hasText: 'Password is required and 6' }).nth(4)).toBeVisible();
 });
 
-test('should update profile if password length >= 6', async ({ page }) => {
+testUser('should update profile if password length >= 6', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Enter Your Password' }).click();
     await page.getByRole('textbox', { name: 'Enter Your Password' }).fill('123456');
     await page.getByRole('button', { name: 'UPDATE' }).click();
@@ -39,4 +45,32 @@ test('should update profile if password length >= 6', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Enter Your Password' }).fill('cs4218@test.com');
     await page.getByRole('button', { name: 'UPDATE' }).click();
     await expect(page.locator('div').filter({ hasText: 'Profile Updated Successfully' }).nth(4)).toBeVisible()
+});
+
+testUser("should show and allow editing of all profile fields", async ({ page }) => {
+  const nameBox = page.getByPlaceholder("Enter Your Name");
+  const phoneBox = page.getByPlaceholder("Enter Your Phone");
+  const addressBox = page.getByPlaceholder("Enter Your Address");
+
+  // verify prefilled
+  await expect(nameBox).toHaveValue(/.+/);
+  await expect(phoneBox).toHaveValue(/.+/);
+  await expect(addressBox).toHaveValue(/.+/);
+
+  // update
+  await nameBox.fill("E2E Tester");
+  await phoneBox.fill("91234567");
+  await addressBox.fill("NUS COM2 E2E Street");
+  await page.getByRole('textbox', { name: 'Enter Your Password' }).click();
+  await page.getByRole('textbox', { name: 'Enter Your Password' }).fill('cs4218@test.com');
+  await page.getByRole("button", { name: /update/i }).click();
+  await expect(page.locator('div').filter({ hasText: 'Profile Updated Successfully' }).nth(4)).toBeVisible()
+
+
+  // temporary restore original state
+  await nameBox.fill("CS 4218 Test Account");
+  await phoneBox.fill("81234567");
+  await addressBox.fill("1 Computing Drive");
+  await page.getByRole("button", { name: /update/i }).click();
+  await expect(page.locator('div').filter({ hasText: 'Profile Updated Successfully' }).nth(4)).toBeVisible()
 });

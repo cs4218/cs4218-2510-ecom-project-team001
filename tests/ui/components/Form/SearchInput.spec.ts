@@ -1,14 +1,19 @@
-import { test, expect } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
 
-test.describe.configure({ mode: "parallel" });
+// For normal user
+export const testUser = base.extend({
+    storageState: "tests/ui/.auth/user.json",
+});
 
-test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/');
+testUser.describe.configure({ mode: "parallel" });
+
+testUser.beforeEach(async ({ page }) => {
+    await page.goto("/");
 })
 
-test.describe("Search Input", () => {
+testUser.describe("Search Input", () => {
     // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js components
-    test('should return correct search result for full keyword of a single valid product', async ({ page }) => {
+    testUser('should return correct search result for full keyword of a single valid product', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('Laptop');
         await page.getByRole('button', { name: 'Search' }).click();
@@ -18,7 +23,7 @@ test.describe("Search Input", () => {
     });
 
     // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js components
-    test('should return correct search result for partial keyword of a single valid product', async ({ page }) => {
+    testUser('should return correct search result for partial keyword of a single valid product', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('No');
         await page.getByRole('button', { name: 'Search' }).click();
@@ -28,7 +33,7 @@ test.describe("Search Input", () => {
     });
 
     // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js components
-    test('should return correct search result for partial keyword of multiple valid products', async ({ page }) => {
+    testUser('should return correct search result for partial keyword of multiple valid products', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('Best');
         await page.getByRole('button', { name: 'Search' }).click();
@@ -42,7 +47,7 @@ test.describe("Search Input", () => {
     });
 
     // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js components
-    test('should return no products found for invalid product keyword', async ({ page }) => {
+    testUser('should return no products found for invalid product keyword', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('Random');
         await page.getByRole('button', { name: 'Search' }).click();
@@ -50,7 +55,7 @@ test.describe("Search Input", () => {
     });
 
     // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js, pages/CartPage.js components,
-    test('should maintain search context', async ({ page }) => {
+    testUser('should maintain search context', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('Laptop');
         await page.getByRole('button', { name: 'Search' }).click();

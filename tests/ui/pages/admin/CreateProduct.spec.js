@@ -1,10 +1,15 @@
-import { test, expect } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
+
+// For normal user
+export const testAdmin = base.extend({
+  storageState: "tests/ui/.auth/admin.json",
+});
 
 // Run tests in parallel to speed up execution
-test.describe.configure({ mode: "parallel" });
+testAdmin.describe.configure({ mode: "parallel" });
 
-test.describe("Create Product Page", () => {
-  test("should allow me to create a product when all fields filled in", async ({
+testAdmin.describe("Create Product Page", () => {
+  testAdmin("should allow me to create a product when all fields filled in", async ({
     page,
   }) => {
     // Arrange + Act
