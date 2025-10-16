@@ -275,3 +275,271 @@ describe("searchProductController integration", () => {
     spy.mockRestore();
   });
 });
+
+// Product Data Retrieval Integration between ProductDetails and getProductController
+describe("GET /api/v1/product/get-product/:slug", () => {
+  let testProduct;
+  beforeEach(async () => {
+    testProduct = await productModel.create({
+      name: "Test Smartphone",
+      slug: slugify("Test Smartphone"),
+      description: "A test smartphone",
+      price: 999,
+      category: gadgetCategory._id,
+      quantity: 10,
+      shipping: true,
+      photo: {
+        data: tinyBuffer,
+        contentType: "image/jpeg",
+      },
+    });
+  });
+
+  test("should fetch a single product by slug successfully", async () => {
+    const res = await request(app)
+      .get(`/api/v1/product/get-product/${testProduct.slug}`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe("Single Product Fetched");
+    expect(res.body.product).toBeDefined();
+    expect(res.body.product.name).toBe("Test Smartphone");
+    expect(res.body.product.slug).toBe(testProduct.slug);
+    expect(res.body.product.price).toBe(999);
+    expect(res.body.product.photo).toBeUndefined(); // Photo should be excluded
+    expect(res.body.product.category).toBeDefined();
+    expect(res.body.product.category.name).toBe("Gadgets");
+  });
+
+  test("should return 404 when product with given slug does not exist", async () => {
+    const res = await request(app)
+      .get("/api/v1/product/get-product/non-existent-slug")
+      .expect(404);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("Product not found");
+  });
+});
+
+// Product Data Retrieval between ProductDetails and productPhotoController
+describe("GET /api/v1/product/product-photo/:pid", () => {
+  let testProduct;
+  beforeEach(async () => {
+    testProduct = await productModel.create({
+      name: "Test Smartphone",
+      slug: slugify("Test Smartphone"),
+      description: "A test smartphone",
+      price: 999,
+      category: gadgetCategory._id,
+      quantity: 10,
+      shipping: true,
+      photo: {
+        data: tinyBuffer,
+        contentType: "image/jpeg",
+      },
+    });
+  });
+
+  test("should fetch product photo successfully", async () => {
+    const res = await request(app)
+      .get(`/api/v1/product/product-photo/${testProduct._id}`)
+      .expect(200);
+
+    expect(res.headers["content-type"]).toBe("image/jpeg");
+    expect(res.body).toEqual(tinyBuffer);
+  });
+
+  test("should return 404 when product does not exist", async () => {
+    const fakeId = "507f1f77bcf86cd799439011"; // Valid ObjectId format
+    const res = await request(app)
+      .get(`/api/v1/product/product-photo/${fakeId}`)
+      .expect(404);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("Photo not found");
+  });
+
+  test("should return 404 when product exists but has no photo", async () => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    const productWithoutPhoto = await productModel.create({
+      name: "No Photo Product",
+      slug: slugify("No Photo Product"),
+      description: "Product without photo",
+      price: 500,
+      category: gadgetCategory._id,
+      quantity: 5,
+      shipping: false,
+    });
+
+    const res = await request(app)
+      .get(`/api/v1/product/product-photo/${productWithoutPhoto._id}`)
+      .expect(404);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("Photo not found");
+  });
+
+  test("should handle invalid product ID format", async () => {
+    const res = await request(app)
+      .get("/api/v1/product/product-photo/invalid-id")
+      .expect(500);
+
+    expect(res.body.success).toBe(false);
+  });
+});
+
+// Related Products API Integration between ProductDetails and realtedProductController
+describe("GET /api/v1/product/related-product/:pid/:cid - realtedProductController", () => {
+  let relatedProduct1;
+  let relatedProduct2;
+  let relatedProduct3;
+  let differentCategoryProduct;
+  let electronicsCategory;
+  let testProduct;
+
+  beforeEach(async () => {
+    // Create multiple products in the same category
+    relatedProduct1 = await productModel.create({
+      name: "Related Phone 1",
+      slug: slugify("Related Phone 1"),
+      description: "First related phone",
+      price: 799,
+      category: gadgetCategory._id,
+      quantity: 5,
+      shipping: true,
+    });
+
+    relatedProduct2 = await productModel.create({
+      name: "Related Phone 2",
+      slug: slugify("Related Phone 2"),
+      description: "Second related phone",
+      price: 699,
+      category: gadgetCategory._id,
+      quantity: 8,
+      shipping: true,
+    });
+
+    relatedProduct3 = await productModel.create({
+      name: "Related Phone 3",
+      slug: slugify("Related Phone 3"),
+      description: "Third related phone",
+      price: 599,
+      category: gadgetCategory._id,
+      quantity: 12,
+      shipping: false,
+    });
+
+    // Create a product in a different category
+    electronicsCategory = await categoryModel.create({
+      name: "Electronics",
+      slug: "electronics",
+    });
+
+    differentCategoryProduct = await productModel.create({
+      name: "Laptop",
+      slug: slugify("Laptop"),
+      description: "A laptop",
+      price: 1299,
+      category: electronicsCategory._id,
+      quantity: 3,
+      shipping: true,
+    });
+
+    testProduct = await productModel.create({
+      name: "Test Smartphone",
+      slug: slugify("Test Smartphone"),
+      description: "A test smartphone",
+      price: 999,
+      category: gadgetCategory._id,
+      quantity: 10,
+      shipping: true,
+      photo: {
+        data: tinyBuffer,
+        contentType: "image/jpeg",
+      },
+    });
+  });
+
+  test("should fetch related products successfully", async () => {
+    const res = await request(app)
+      .get(`/api/v1/product/related-product/${testProduct._id}/${gadgetCategory._id}`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.products).toBeDefined();
+    expect(res.body.products.length).toBeLessThanOrEqual(3);
+
+    // Should not include the test product itself
+    const productIds = res.body.products.map(p => p._id.toString());
+    expect(productIds).not.toContain(testProduct._id.toString());
+
+    // should only return products from the same category
+    res.body.products.forEach(product => {
+      expect(product.category._id.toString()).toBe(gadgetCategory._id.toString());
+    });
+  });
+
+  test("should limit results to 3 products maximum", async () => {
+    let relatedProduct4 = await productModel.create({
+      name: "Related Phone 4",
+      slug: slugify("Related Phone 4"),
+      description: "Fourth related phone",
+      price: 599,
+      category: gadgetCategory._id,
+      quantity: 12,
+      shipping: false,
+    });
+
+    const res = await request(app)
+      .get(`/api/v1/product/related-product/${testProduct._id}/${gadgetCategory._id}`)
+      .expect(200);
+
+    expect(res.body.products.length).toBeLessThanOrEqual(3);
+  });
+
+  test("should return 404 when product id is missing", async () => {
+    const res = await request(app)
+      .get(`/api/v1/product/related-product//${gadgetCategory._id}`)
+      .expect(404); // Handles this as 404, not reaching the controller
+  });
+
+  test("should return 404 when category id is missing", async () => {
+    const res = await request(app)
+      .get(`/api/v1/product/related-product/${testProduct._id}/`)
+      .expect(404); // Handles this as 404, not reaching the controller
+  });
+
+  test("should return empty array when no related products exist", async () => {
+    // Create a new category with only one product
+    const loneCategory = await categoryModel.create({
+      name: "Lone Category",
+      slug: "lone-category",
+    });
+
+    const loneProduct = await productModel.create({
+      name: "Lone Product",
+      slug: slugify("Lone Product"),
+      description: "Only product in category",
+      price: 999,
+      category: loneCategory._id,
+      quantity: 1,
+      shipping: true,
+    });
+
+    const res = await request(app)
+      .get(`/api/v1/product/related-product/${loneProduct._id}/${loneCategory._id}`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.products).toEqual([]);
+  });
+
+  test("should handle when category has products but none are related", async () => {
+    const res = await request(app)
+      .get(`/api/v1/product/related-product/${differentCategoryProduct._id}/${electronicsCategory._id}`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.products).toEqual([]);
+  });
+});
