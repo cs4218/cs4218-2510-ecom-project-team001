@@ -7,14 +7,7 @@ export const testUser = base.extend({
 
 
 testUser.beforeEach(async ({ page }) => {
-    // logout of the admin account and enter the user account
-    // await page.goto("/dashboard/admin/]");
-    // await page.getByRole('button', { name: 'MYADMIN' }).click();
-    // await page.getByRole('link', { name: 'Logout' }).click();
-    // await page.getByRole('textbox', { name: 'Enter Your Email' }).fill('cs4218@test.com');
-    // await page.getByRole('textbox', { name: 'Enter Your Password' }).click();
-    // await page.getByRole('textbox', { name: 'Enter Your Password' }).fill('cs4218@test.com');
-    // await page.getByRole('button', { name: 'LOGIN' }).click();
+    // go to the profile page
     await page.goto("/");
     await page.getByRole('button', { name: 'CS 4218 Test Account' }).click();
     await page.getByRole('link', { name: 'Dashboard' }).click();
