@@ -12,6 +12,7 @@ import userModel from "../../../models/userModel.js";
 import productModel from "../../../models/productModel.js";
 
 import app from "../../../server.js";
+import fs from "fs";
 
 jest.setTimeout(25000);
 
@@ -52,9 +53,19 @@ beforeEach(async () => {
     slug: "gadgets",
   });
 });
-
+/**
+ * =================================================================================================
+ * Integration testing involving
+ * 1. controllers/productController.js (createProductController,
+ *    updateProductController, deleteProductController)
+ * 2. server.js (app)
+ * 3. /models/productModel.js
+ * 4. /routes/productRoutes.js
+ * =================================================================================================
+ */
 describe("productController integration", () => {
   test("POST /create-product should create a product (201)", async () => {
+    // Arrange + Act
     const res = await request(app)
       .post("/api/v1/product/create-product")
       .set("authorization", authToken)
@@ -66,6 +77,7 @@ describe("productController integration", () => {
       .field("shipping", "1")
       .attach("photo", tinyBuffer, "tiny.png");
 
+    // Assert
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({
       success: true,
@@ -80,8 +92,87 @@ describe("productController integration", () => {
     expect(doc.name).toBe("Test Product");
   });
 
+  test.each([
+    ["name", "", "Name is Required"],
+    ["description", "", "Description is Required"],
+    ["price", "", "Price is Required"],
+    ["category", "", "Category is Required"],
+    ["quantity", "", "Quantity is Required"],
+    ["shipping", undefined, "Shipping is Required"],
+    ["photo", undefined, "Photo is Required and should be less than 1mb"],
+  ])(
+    "POST /create-product returns 400 when %s is missing",
+    async (missingField, missingValue, expectedError) => {
+      // Arrange + Act
+      let req = request(app)
+        .post("/api/v1/product/create-product")
+        .set("authorization", authToken);
+
+      const baseFields = {
+        name: "Valid Name",
+        description: "Valid Description",
+        price: "123",
+        category: gadgetCategory._id.toString(),
+        quantity: "3",
+        shipping: "1",
+      };
+
+      // add fields, skipping the missing one
+      for (const [key, val] of Object.entries(baseFields)) {
+        if (key === missingField) {
+          if (missingValue !== undefined) {
+            req = req.field(key, missingValue);
+          }
+        } else {
+          req = req.field(key, val);
+        }
+      }
+
+      if (missingField !== "photo") {
+        req = req.attach("photo", tinyBuffer, "tiny.png");
+      }
+
+      const res = await req;
+
+      // Assert
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({ error: expectedError });
+    }
+  );
+
+  test("POST /create-product should return 500 if there is an error in creating the product", async () => {
+    // Arrange
+    // Simulate an error while running createProductController by mocking fs.readFileSync to throw.
+    // This tests the error flow in the integration between the app and the controller.
+    const fsSpy = jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+      throw new Error("FS read failed");
+    });
+
+    // Act
+    const res = await request(app)
+      .post("/api/v1/product/create-product")
+      .set("authorization", authToken)
+      .field("name", "Failing Product")
+      .field("description", "Should trigger 500")
+      .field("price", "99")
+      .field("category", gadgetCategory._id.toString())
+      .field("quantity", "2")
+      .field("shipping", "1")
+      .attach("photo", tinyBuffer, "tiny.png");
+
+    // Assert
+    expect(res.status).toBe(500);
+    expect(res.body).toMatchObject(
+      expect.objectContaining({
+        success: false,
+      })
+    );
+
+    fsSpy.mockRestore();
+  });
+
   test("PUT /update-product/:pid should update product (201)", async () => {
-    // Arrange: create a product directly in DB first
+    // Arrange: create a product directly in the in-memory test db first
     const original = await productModel.create({
       name: "Original Product",
       slug: slugify("Original Product"),
@@ -92,6 +183,7 @@ describe("productController integration", () => {
       shipping: true,
     });
 
+    // Act
     const res = await request(app)
       .put(`/api/v1/product/update-product/${original._id}`)
       .set("authorization", authToken)
@@ -103,6 +195,7 @@ describe("productController integration", () => {
       .field("shipping", "1")
       .attach("photo", tinyBuffer, "tiny.png");
 
+    // Assert
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({
       success: true,
@@ -117,6 +210,85 @@ describe("productController integration", () => {
     expect(updated.price).toBe(249);
   });
 
+  test("PUT /update-product/:pid invalid id should return 500", async () => {
+    // Arrange + Act
+    const res = await request(app)
+      .put(`/api/v1/product/update-product/not-a-valid-id`)
+      .set("authorization", authToken)
+      .field("name", "Updated")
+      .field("description", "Updated")
+      .field("price", "11")
+      .field("category", gadgetCategory._id.toString())
+      .field("quantity", "2")
+      .field("shipping", "1")
+      .attach("photo", tinyBuffer, "tiny.png");
+
+    // Assert
+    expect(res.status).toBe(500);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: "Error in Updating product",
+    });
+  });
+
+  test.each([
+    ["name", "", "Name is Required"],
+    ["description", "", "Description is Required"],
+    ["price", "", "Price is Required"],
+    ["category", "", "Category is Required"],
+    ["quantity", "", "Quantity is Required"],
+    ["shipping", undefined, "Shipping is Required"],
+    ["photo", undefined, "Photo is Required and should be less than 1mb"],
+  ])(
+    "PUT /update-product/:pid returns 400 when %s is missing",
+    async (missingField, missingValue, expectedError) => {
+      // Arrange an existing product
+      const original = await productModel.create({
+        name: "Orig",
+        slug: slugify("Orig"),
+        description: "desc",
+        price: 10,
+        category: gadgetCategory._id,
+        quantity: 1,
+        shipping: true,
+      });
+
+      // Act
+      let req = request(app)
+        .put(`/api/v1/product/update-product/${original._id}`)
+        .set("authorization", authToken);
+
+      const baseFields = {
+        name: "New Name",
+        description: "New Desc",
+        price: "456",
+        category: gadgetCategory._id.toString(),
+        quantity: "4",
+        shipping: "1",
+      };
+
+      for (const [key, val] of Object.entries(baseFields)) {
+        if (key === missingField) {
+          if (missingValue !== undefined) {
+            req = req.field(key, missingValue);
+          }
+        } else {
+          req = req.field(key, val);
+        }
+      }
+
+      if (missingField !== "photo") {
+        req = req.attach("photo", tinyBuffer, "tiny.png");
+      }
+
+      const res = await req;
+
+      // Assert
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({ error: expectedError });
+    }
+  );
+
   test("DELETE /delete-product/:pid should delete product (200)", async () => {
     // Arrange: create a product to delete
     const toDelete = await productModel.create({
@@ -129,10 +301,12 @@ describe("productController integration", () => {
       shipping: true,
     });
 
+    // Act
     const res = await request(app).delete(
       `/api/v1/product/delete-product/${toDelete._id}`
     );
 
+    // Assert
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
@@ -141,6 +315,38 @@ describe("productController integration", () => {
 
     const deleted = await productModel.findById(toDelete._id);
     expect(deleted).toBeNull();
+  });
+
+  test("DELETE /delete-product/:pid invalid id should return 500", async () => {
+    // Arrange + Act
+    const res = await request(app).delete(
+      `/api/v1/product/delete-product/not-a-valid-id`
+    );
+
+    // Assert
+    expect(res.status).toBe(500);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: "Error while deleting product",
+    });
+  });
+
+  test("DELETE /delete-product/:pid valid-but-missing id should still return 200", async () => {
+    // Arrange
+    // Valid ObjectId that does not exist in DB
+    const missingId = "507f1f77bcf86cd799439011";
+
+    // Act
+    const res = await request(app).delete(
+      `/api/v1/product/delete-product/${missingId}`
+    );
+
+    // Assert
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      success: true,
+      message: "Product Deleted successfully",
+    });
   });
 });
 
@@ -360,7 +566,7 @@ describe("GET /api/v1/product/product-photo/:pid", () => {
   });
 
   test("should return 404 when product exists but has no photo", async () => {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, "log").mockImplementation(() => {});
     const productWithoutPhoto = await productModel.create({
       name: "No Photo Product",
       slug: slugify("No Photo Product"),
@@ -462,7 +668,9 @@ describe("GET /api/v1/product/related-product/:pid/:cid", () => {
 
   test("should fetch related products successfully", async () => {
     const res = await request(app)
-      .get(`/api/v1/product/related-product/${testProduct._id}/${gadgetCategory._id}`)
+      .get(
+        `/api/v1/product/related-product/${testProduct._id}/${gadgetCategory._id}`
+      )
       .expect(200);
 
     expect(res.body.success).toBe(true);
@@ -470,12 +678,14 @@ describe("GET /api/v1/product/related-product/:pid/:cid", () => {
     expect(res.body.products.length).toBeLessThanOrEqual(3);
 
     // Should not include the test product itself
-    const productIds = res.body.products.map(p => p._id.toString());
+    const productIds = res.body.products.map((p) => p._id.toString());
     expect(productIds).not.toContain(testProduct._id.toString());
 
     // should only return products from the same category
-    res.body.products.forEach(product => {
-      expect(product.category._id.toString()).toBe(gadgetCategory._id.toString());
+    res.body.products.forEach((product) => {
+      expect(product.category._id.toString()).toBe(
+        gadgetCategory._id.toString()
+      );
     });
   });
 
@@ -491,7 +701,9 @@ describe("GET /api/v1/product/related-product/:pid/:cid", () => {
     });
 
     const res = await request(app)
-      .get(`/api/v1/product/related-product/${testProduct._id}/${gadgetCategory._id}`)
+      .get(
+        `/api/v1/product/related-product/${testProduct._id}/${gadgetCategory._id}`
+      )
       .expect(200);
 
     expect(res.body.products.length).toBeLessThanOrEqual(3);
@@ -527,7 +739,9 @@ describe("GET /api/v1/product/related-product/:pid/:cid", () => {
     });
 
     const res = await request(app)
-      .get(`/api/v1/product/related-product/${loneProduct._id}/${loneCategory._id}`)
+      .get(
+        `/api/v1/product/related-product/${loneProduct._id}/${loneCategory._id}`
+      )
       .expect(200);
 
     expect(res.body.success).toBe(true);
@@ -536,7 +750,9 @@ describe("GET /api/v1/product/related-product/:pid/:cid", () => {
 
   test("should handle when category has products but none are related", async () => {
     const res = await request(app)
-      .get(`/api/v1/product/related-product/${differentCategoryProduct._id}/${electronicsCategory._id}`)
+      .get(
+        `/api/v1/product/related-product/${differentCategoryProduct._id}/${electronicsCategory._id}`
+      )
       .expect(200);
 
     expect(res.body.success).toBe(true);
@@ -589,13 +805,17 @@ describe("GET /api/v1/product/product-category/:slug", () => {
     expect(response.body.category.slug).toBe("gadgets");
     expect(response.body.products).toBeDefined();
     expect(response.body.products.length).toBe(2);
-    
+
     // Verify products belong to the correct category
-    expect(response.body.products[0].category._id).toBe(gadgetCategory._id.toString());
-    expect(response.body.products[1].category._id).toBe(gadgetCategory._id.toString());
-    
+    expect(response.body.products[0].category._id).toBe(
+      gadgetCategory._id.toString()
+    );
+    expect(response.body.products[1].category._id).toBe(
+      gadgetCategory._id.toString()
+    );
+
     // Verify product details
-    const productNames = response.body.products.map(p => p.name);
+    const productNames = response.body.products.map((p) => p.name);
     expect(productNames).toContain("Phone 1");
     expect(productNames).toContain("Phone 2");
   });
