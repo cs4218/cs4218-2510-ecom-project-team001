@@ -3,6 +3,7 @@ export default {
   testEnvironment: "node",
   testMatch: [
     "<rootDir>/tests/integration/controllers/productController.integration.test.js",
+    "<rootDir>/tests/integration/controllers/authController.integration.test.js"
   ],
   // TODO: re-introduce coverage
   collectCoverage: false,

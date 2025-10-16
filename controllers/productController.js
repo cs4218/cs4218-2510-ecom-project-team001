@@ -273,7 +273,7 @@ export const productCountController = async (req, res) => {
 export const productListController = async (req, res) => {
   try {
     const perPage = 6;
-    
+
     if (req.params.page != undefined && req.params.page < 1) {
       return res.status(400).send({
         success: false,
@@ -281,7 +281,7 @@ export const productListController = async (req, res) => {
         message: "Page number should be greater than 0",
       });
     }
-    
+
     const page = req.params.page ? req.params.page : 1;
     const products = await productModel
       .find({})
