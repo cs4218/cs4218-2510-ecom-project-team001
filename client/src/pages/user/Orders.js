@@ -27,11 +27,11 @@ const Orders = () => {
           <div className="col-md-3">
             <UserMenu />
           </div>
-          <div className="col-md-9">
+          <div className="col-md-9" aria-label="user-orders">
             <h1 className="text-center">All Orders</h1>
             {orders?.map((o, i) => {
               return (
-                <div className="border shadow">
+                <div className="border shadow" aria-label="user-order">
                   <table className="table">
                     <thead>
                       <tr>
