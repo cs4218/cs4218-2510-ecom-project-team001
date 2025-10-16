@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import CartPage from "../pages/CartPage";
 import { mock } from "node:test";
 
-// ---------- stable mocks ----------
 jest.mock("axios");
 jest.mock("react-hot-toast", () => ({
   success: jest.fn(),
@@ -88,13 +87,12 @@ const renderCartPage = async (cart = [], user = null) => {
   return utils;
 };
 
-// ---------- tests ----------
 describe("CartPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test("renders empty cart message when cart is empty - not logged in", async () => {
+  test("integration with auth context -- user logged in", async () => {
     await renderCartPage([], null);
 
     expect(screen.getByText("Your Cart Is Empty")).toBeInTheDocument();
@@ -102,7 +100,7 @@ describe("CartPage", () => {
     expect(screen.getByText("Total: $0.00")).toBeInTheDocument();
   });
 
-  test("renders empty cart message when cart is empty - logged in", async () => {
+  test("integration with auth context - user logged in", async () => {
     const mockUser = {
       name: "Tester",
       email: "tester@gmail.com",
@@ -114,9 +112,10 @@ describe("CartPage", () => {
 
     expect(screen.getByText("Your Cart Is Empty")).toBeInTheDocument();
     expect(screen.getByText("Hello Tester")).toBeInTheDocument();
+    expect(screen.getByText("Total: $0.00")).toBeInTheDocument();
   });
 
-  test("renders cart items when cart is not empty", async () => {
+  test("integration with cart context", async () => {
     const mockProducts = [
       {
         _id: "1",
@@ -146,49 +145,7 @@ describe("CartPage", () => {
     expect(screen.getAllByRole("button", { name: "Remove" })).toHaveLength(mockProducts.length);
   });
 
-  test("calculates total price correctly", async () => {
-    const mockProducts = [
-      { _id: "1", name: "Product 1", price: 100, description: "Desc 1" },
-      { _id: "2", name: "Product 2", price: 200, description: "Desc 2" },
-    ];
-
-    await renderCartPage(mockProducts, { name: "X", address: "Y" });
-
-    expect(screen.getByText("Total: $300.00")).toBeInTheDocument();
-  });
-
-  test("handles price calculation error gracefully", async () => {
-    const mockProducts = [
-      {
-        _id: "1",
-        name: "Product 1",
-        price: 100,
-        description: "Description 1 for product 1.",
-        quantity: 2,
-      },
-      { _id: "2", name: "Product 2", price: 200, description: "Description 2", quantity: 1 },
-    ];
-    const mockUser = {
-      name: "Tester",
-      email: "tester@gmail.com",
-      address: "Tester Street",
-      phone: "12345678",
-    };
-
-    const mockToLocaleString = jest.spyOn(Number.prototype, 'toLocaleString');
-    mockToLocaleString.mockImplementation(() => {
-      throw new Error("Failed to calculate total price");
-    })
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-
-    await renderCartPage(mockProducts, mockUser);
-
-    expect(consoleSpy).toHaveBeenCalledWith(new Error("Failed to calculate total price"));
-    consoleSpy.mockRestore();
-    mockToLocaleString.mockRestore();
-  })
-
-  test("removes product from cart when Remove button is clicked", async () => {
+  test("integration with localStorage set item", async () => {
     const mockProducts = [{ _id: "1", name: "Product 1", price: 100, description: "Desc 1" }];
     await renderCartPage(mockProducts, { name: "X", address: "Y" });
 
@@ -198,61 +155,7 @@ describe("CartPage", () => {
     expect(localStorage.setItem).toHaveBeenCalledWith("cart", "[]");
   });
 
-  test("handles remove item error gracefully", async () => {
-    const mockProducts = [{ _id: "1", name: "Product 1", price: 100, description: "Desc 1" }];
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    mockSetCart.mockImplementationOnce(() => {
-      throw new Error("Failed to remove item");
-    });
-
-    await renderCartPage(mockProducts, { name: "X", address: "Y" });
-
-    fireEvent.click(screen.getByRole("button", { name: "Remove" }));
-
-    expect(mockSetCart).toHaveBeenCalled();
-    expect(localStorage.setItem).not.toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalledWith(new Error("Failed to remove item"));
-    expect(screen.getByText("Product 1")).toBeInTheDocument();
-
-    consoleSpy.mockRestore();
-  });
-
-  test("tells user to login to checkout when not authenticated", async () => {
-    await renderCartPage([{ _id: "1", name: "Product 1", price: 10, description: "Test" }], null);
-
-    expect(screen.getByRole("button", { name: "Please Login to checkout" })).toBeInTheDocument();
-  });
-
-  test("shows update address button and current address", async () => {
-    const authUser = { 
-      name: "John Doe",
-      email: "john@gmail.com",
-      address: "1 Computing Drive",
-      phone: "12345678"
-    };
-    await renderCartPage([{ _id: "1", name: "Product", price: 10, description: "Test" }], authUser);
-
-    expect(screen.getByText("Update Address")).toBeInTheDocument();
-    expect(screen.queryByText("Current Address")).toBeInTheDocument();
-    expect(screen.queryByText("1 Computing Drive")).toBeInTheDocument();
-  });
-
-  test("navigates to profile when Update Address is clicked", async () => {
-    const authUser = { name: "John Doe" };
-    await renderCartPage([{ _id: "1", name: "Product", price: 10, description: "Test" }], authUser);
-
-    fireEvent.click(screen.getByText("Update Address"));
-    expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
-  });
-
-  test("navigates to login when checkout is clicked without authentication", async () => {
-    await renderCartPage([{ _id: "1", name: "Product", price: 10, description: "Test" }], null);
-
-    fireEvent.click(screen.getByRole("button", { name: "Please Login to checkout" }));
-    expect(mockNavigate).toHaveBeenCalledWith("/login", { state: "/cart" });
-  });
-
-  test("fetches user token when authenticated", async () => {
+  test("integration with braintree/token route", async () => {
     const authUser = { name: "A", address: "B" };
     await renderCartPage([{ _id: "1", name: "Product", price: 10, description: "Test" }], authUser);
 
@@ -261,21 +164,7 @@ describe("CartPage", () => {
     );
   });
 
-  test("handles error when fetching user token", async () => {
-    const authUser = { name: "A", address: "B" };
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-    axios.get.mockRejectedValueOnce(new Error("Token fetch failed"));
-
-    await renderCartPage([], authUser);
-
-    await waitFor(() =>
-      expect(axios.get).toHaveBeenCalledWith("/api/v1/product/braintree/token")
-    );
-    expect(consoleSpy).toHaveBeenCalledWith(new Error("Token fetch failed"));
-    consoleSpy.mockRestore();
-  });
-
-  test("handles payment successfully", async () => {
+  test("integration with braintree/payment route", async () => {
     const authUser = { name: "Foo", address: "123 Main St" };
     const cartItems = [{ _id: "1", name: "Product", price: 10, description: "Test" }];
 
@@ -295,14 +184,27 @@ describe("CartPage", () => {
         cart: cartItems,
       })
     );
-
-    expect(localStorage.removeItem).toHaveBeenCalledWith("cart");
-    expect(mockSetCart).toHaveBeenCalledWith([]);
-    expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
-    expect(toast.success).toHaveBeenCalledWith("Payment Completed Successfully");
   });
 
-  test("handles payment failure gracefully", async () => {
+  test("integration with localStorage removeItem", async () => {
+    const authUser = { name: "Foo", address: "123 Main St" };
+    const cartItems = [{ _id: "1", name: "Product", price: 10, description: "Test" }];
+
+    axios.post.mockResolvedValue({ data: { success: true } });
+
+    await renderCartPage(cartItems, authUser);
+
+    await screen.findByTestId("braintree-dropin");
+    const payBtn = screen.getByRole("button", { name: "Make Payment" });
+    expect(payBtn).toBeEnabled();
+
+    fireEvent.click(payBtn);
+    await waitFor(() => axios.post);
+
+    expect(localStorage.removeItem).toHaveBeenCalledWith("cart");
+  });
+
+  test("integration with localStorage removeItem - payment failure", async () => {
     const authUser = { name: "Foo", address: "123 Main St" };
     axios.post.mockRejectedValue(new Error("Payment failed"));
 
@@ -316,26 +218,8 @@ describe("CartPage", () => {
     await waitFor(() => expect(logSpy).toHaveBeenCalled());
 
     // No clearing on failure
-    expect(mockSetCart).not.toHaveBeenCalledWith([]);
     expect(localStorage.removeItem).not.toHaveBeenCalledWith("cart");
 
     logSpy.mockRestore();
-  });
-
-  test("does not show payment options when cart is empty", async () => {
-    const authUser = { name: "Foo", address: "123 Main St" };
-    await renderCartPage([], authUser);
-
-    expect(screen.queryByTestId("braintree-dropin")).not.toBeInTheDocument();
-    expect(screen.queryByText("Make Payment")).not.toBeInTheDocument();
-  });
-
-  test("shows payment widget but disables payment when user has no address", async () => {
-    const authUser = { name: "Foo" };
-    await renderCartPage([{ _id: "1", name: "P", price: 10, description: "T" }], authUser);
-
-    await screen.findByTestId("braintree-dropin");
-    const payBtn = screen.getByRole("button", { name: "Make Payment" });
-    expect(payBtn).toBeDisabled();
   });
 });

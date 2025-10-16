@@ -94,6 +94,7 @@ testUser.describe("Home Page", () => {
         await expect(page.getByText('Item Added to cart')).toBeVisible();
         const badge = page.locator('a[href="/cart"] + sup.ant-badge-count');
         await expect(badge).toHaveText('1');
+        await expect(page.getByText(/item added to cart/i)).toBeVisible();
 
         // Verify product in cart and clean up
         await page.goto('/cart');
