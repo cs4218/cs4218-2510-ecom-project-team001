@@ -4,6 +4,7 @@
   1. Shopping Cart Integration between ProductDetails and Cart context
   2. Product Data Integration between ProductDetails and getProductController (+ productPhotoController)
   3. Related Products API Integration between ProductDetails and realtedProductController
+  4. Error handling with 404 page
 */ 
 import { test, expect } from '@playwright/test';
 
@@ -94,7 +95,7 @@ test.describe('ProductDetails Page', () => {
   });
 
   test('should handle 404 for non-existent product', async ({ page }) => {
-    await page.goto(`${baseURL}/product/non-existent-product-slug`);
+    await page.goto(`/product/non-existent-product-slug`);
 
     await page.waitForURL(/\/404/, { timeout: 10000 });
     

@@ -389,7 +389,7 @@ describe("GET /api/v1/product/product-photo/:pid", () => {
 });
 
 // Related Products API Integration between ProductDetails and realtedProductController
-describe("GET /api/v1/product/related-product/:pid/:cid - realtedProductController", () => {
+describe("GET /api/v1/product/related-product/:pid/:cid", () => {
   let relatedProduct1;
   let relatedProduct2;
   let relatedProduct3;
@@ -541,5 +541,95 @@ describe("GET /api/v1/product/related-product/:pid/:cid - realtedProductControll
 
     expect(res.body.success).toBe(true);
     expect(res.body.products).toEqual([]);
+  });
+});
+
+// Category Products API Integration between CategoryProduct and productCategoryController
+describe("GET /api/v1/product/product-category/:slug", () => {
+  let product1, product2;
+  let electronicsCategory;
+
+  beforeEach(async () => {
+    // Create additional category
+    electronicsCategory = await categoryModel.create({
+      name: "Electronics",
+      slug: "electronics",
+    });
+
+    // Create products for gadgets category
+    product1 = await productModel.create({
+      name: "Phone 1",
+      slug: slugify("Phone 1"),
+      description: "First phone",
+      price: 799,
+      category: gadgetCategory._id,
+      quantity: 5,
+      shipping: true,
+    });
+
+    product2 = await productModel.create({
+      name: "Phone 2",
+      slug: slugify("Phone 2"),
+      description: "Second phone",
+      price: 699,
+      category: gadgetCategory._id,
+      quantity: 8,
+      shipping: true,
+    });
+  });
+
+  test("should return products for a valid category slug", async () => {
+    const response = await request(app)
+      .get("/api/v1/product/product-category/gadgets")
+      .expect(200);
+
+    expect(response.body.success).toBe(true);
+    expect(response.body.category).toBeDefined();
+    expect(response.body.category.name).toBe("Gadgets");
+    expect(response.body.category.slug).toBe("gadgets");
+    expect(response.body.products).toBeDefined();
+    expect(response.body.products.length).toBe(2);
+    
+    // Verify products belong to the correct category
+    expect(response.body.products[0].category._id).toBe(gadgetCategory._id.toString());
+    expect(response.body.products[1].category._id).toBe(gadgetCategory._id.toString());
+    
+    // Verify product details
+    const productNames = response.body.products.map(p => p.name);
+    expect(productNames).toContain("Phone 1");
+    expect(productNames).toContain("Phone 2");
+  });
+
+  test("should return empty products array for category with no products", async () => {
+    // Create a new category with no products
+    const emptyCategory = await categoryModel.create({
+      name: "Empty Category",
+      slug: "empty-category",
+    });
+
+    const response = await request(app)
+      .get("/api/v1/product/product-category/empty-category")
+      .expect(200);
+
+    expect(response.body.success).toBe(true);
+    expect(response.body.category).toBeDefined();
+    expect(response.body.category.name).toBe("Empty Category");
+    expect(response.body.products).toEqual([]);
+  });
+
+  test("should return 404 when category slug does not exist", async () => {
+    const response = await request(app)
+      .get("/api/v1/product/product-category/non-existent-category")
+      .expect(404);
+
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toBe("Category not found");
+    expect(response.body.error).toBeDefined();
+  });
+
+  test("should return 404 when slug parameter is missing", async () => {
+    const response = await request(app)
+      .get("/api/v1/product/product-category/")
+      .expect(404);
   });
 });

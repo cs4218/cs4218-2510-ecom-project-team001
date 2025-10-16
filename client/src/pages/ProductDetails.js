@@ -28,7 +28,7 @@ const ProductDetails = () => {
     } catch (error) {
       console.error(error);
       
-      if (error.response?.status === 404) {
+      if (error.response?.status === 404) { // redirect to 404 page if product not found
         navigate("/404");
       } else {
         toast.error("Something went wrong in getting product");

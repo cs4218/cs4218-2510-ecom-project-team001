@@ -1411,24 +1411,21 @@ describe("Product Controller Tests", () => {
       });
     });
 
-    test("should handle missing category data", async () => {
+    test("should return 404 when category doesn't exist", async () => {
       // Arrange
-      const error = new Error("Database error");
-      categoryModel.findOne = jest.fn().mockResolvedValue(null);
-      productModel.find = jest.fn().mockReturnValue({
-        populate: jest.fn().mockRejectedValue(error),
-      });
+      req.params.slug = "nonexistent-category";
+      const error = new Error("Category not found");
+      categoryModel.findOne.mockResolvedValue(null);
 
-      // Act
+      // Act 
       await productCategoryController(req, res);
 
       // Assert
       expect(categoryModel.findOne).toHaveBeenCalledWith({ slug: req.params.slug });
-      expect(productModel.find).toHaveBeenCalledWith({ category: null });
-      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.status).toHaveBeenCalledWith(404);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Error while getting products",
+        message: "Category not found",
         error,
       });
     });

@@ -377,6 +377,13 @@ export const productCategoryController = async (req, res) => {
       });
     }
     const category = await categoryModel.findOne({ slug: req.params.slug });
+    if (!category) {
+      return res.status(404).send({
+        success: false,
+        error: new Error("Category not found"),
+        message: "Category not found",
+      });
+    }
     const products = await productModel.find({ category }).populate("category");
     res.status(200).send({
       success: true,
