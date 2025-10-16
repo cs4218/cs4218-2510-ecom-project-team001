@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import "../styles/CategoryProductStyles.css";
 import axios from "axios";
 const CategoryProduct = () => {
@@ -21,6 +22,12 @@ const CategoryProduct = () => {
       setCategory(data?.category);
     } catch (error) {
       console.error(error);
+      if (error.response?.status === 404) { // redirect to 404 page if category not found
+        navigate("/404");
+      } else {
+        toast.error("Something went wrong in getting category products");
+      }
+
     }
   };
 
