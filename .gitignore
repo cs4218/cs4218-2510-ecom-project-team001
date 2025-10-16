@@ -21,6 +21,9 @@ settings.json
 coverage/**/*
 notes.txt
 
+# Playwright
+/playwright/.auth/
+/playwright-report
 # Playwright UI test auth state file
 /**/*/.auth/user.json
 

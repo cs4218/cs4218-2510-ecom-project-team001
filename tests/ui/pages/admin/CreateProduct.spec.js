@@ -1,18 +1,24 @@
-import { test, expect } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
+
+// For normal user
+export const testAdmin = base.extend({
+  storageState: "tests/ui/.auth/admin.json",
+});
 
 // Run tests in parallel to speed up execution
-test.describe.configure({ mode: "parallel" });
+testAdmin.describe.configure({ mode: "parallel" });
 
-test.describe("Create Product Page", () => {
+testAdmin.describe("Create Product Page", () => {
+
   let context;
   let page;
 
-  test.beforeAll(async ({ browser }) => {
-    context = await browser.newContext();  
+  testAdmin.beforeAll(async ({ browser }) => {
+    context = await browser.newContext();
     page = await context.newPage();
   });
 
-  test.afterAll(async () => {
+  testAdmin.afterAll(async () => {
     // Clean up - delete the product created so it doesn't affect future tests
     await page.goto("/dashboard/admin/product/Nature-Book");
     page.on('dialog', async dialog => {
@@ -22,8 +28,8 @@ test.describe("Create Product Page", () => {
     await page.goto("/dashboard/admin/products");
     await expect(page.getByText("Nature Book")).not.toBeVisible();
   });
-  
-  test("should allow me to create a product when all fields filled in", async ({
+
+  testAdmin("should allow me to create a product when all fields filled in", async ({
     page,
   }) => {
     // Arrange + Act
