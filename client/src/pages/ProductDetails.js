@@ -27,6 +27,12 @@ const ProductDetails = () => {
       getSimilarProduct(data?.product._id, data?.product.category._id);
     } catch (error) {
       console.error(error);
+      
+      if (error.response?.status === 404) {
+        navigate("/404");
+      } else {
+        toast.error("Something went wrong in getting product");
+      }
     }
   };
   //get similar product
