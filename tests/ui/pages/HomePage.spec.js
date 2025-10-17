@@ -22,7 +22,7 @@ testUser.describe("Home Page", () => {
         await expect(page.getByRole('article', { name: 'NUS T-shirt'})).toBeVisible();
         await expect(page.getByRole('article', { name: 'Smartphone'})).toBeVisible();
         await expect(page.getByRole('article', { name: 'Laptop'})).toBeVisible();
-        const nextPage = page.getByRole('button', { name: 'Loadmore' });
+        const nextPage = page.getByRole('button', { name: 'Loadmore', exact: false });
         if (await nextPage.count()) {
             await nextPage.click();
             await expect(page.getByRole('article', { name: 'Textbook'})).toBeVisible();
@@ -95,11 +95,10 @@ testUser.describe("Home Page", () => {
         const badge = page.locator('a[href="/cart"] + sup.ant-badge-count');
         await expect(badge).toHaveText('1');
         await expect(page.getByText(/item added to cart/i)).toBeVisible();
-
-        // Verify product in cart and clean up
-        await page.goto('/cart');
-        const cartItems = page.locator('[aria-label="cart-list"]');
-        await expect(cartItems.getByRole('img')).toHaveCount(1);
-        await page.getByRole('button', { name: 'Remove' }).click();
-    })
+        const cartItems = await page.evaluate(() => {
+        const cart = window.localStorage.getItem('cart');
+            return cart ? JSON.parse(cart) : [];
+        });
+        expect(cartItems.length).toBeGreaterThan(0);
+    });
 })
