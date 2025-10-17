@@ -109,6 +109,7 @@ testAdmin.describe("Create Category Page", () => {
         .getByLabel("Update Category")
         .getByRole("button", { name: "Submit" })
         .click();
+      // Assert
       await expect(page.locator("tbody")).toContainText(
         "Accessories By Cheng Hou"
       );
@@ -134,7 +135,7 @@ testAdmin.describe("Create Category Page", () => {
         .getByRole("row", { name: "Accessories by Li Yuan" })
         .getByRole("button", { name: "Delete" })
         .click();
-      // Success toast shows up
+      // Assert - Success toast shows up
       await expect(page.getByText("category is deleted")).toBeVisible();
     }
   );
