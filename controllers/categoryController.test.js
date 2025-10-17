@@ -44,7 +44,7 @@ describe("categoryController", () => {
   describe("createCategoryController", () => {
     // Note: HTTP status codes are obviously wrong, but because this is a unit test, we don't want
     // to introduce integration bug. TODO: consult on this
-    test("returns 401 unauthorized when name is missing", async () => {
+    test("returns 400 unauthorized when name is missing", async () => {
       // Arrange
       const req = { body: { named: "some wrong prop" } };
 
@@ -53,7 +53,7 @@ describe("categoryController", () => {
 
       // Assert
       expect(categoryModel.findOne).not.toHaveBeenCalled();
-      expect(mockedRes.status).toHaveBeenCalledWith(401);
+      expect(mockedRes.status).toHaveBeenCalledWith(400);
       expect(mockedRes.send).toHaveBeenCalledWith({
         message: "Name is required",
       });
