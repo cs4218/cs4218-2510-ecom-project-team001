@@ -2,7 +2,7 @@
   MongoDB MUST BE seeded with sample given in Canvas to pass the tests
   This E2E UI test tests:
   1. Category Products API Integration between CategoryProduct and productCategoryController
-  4. Error handling with 404 page
+  2. Error handling with 404 page
 */ 
 import { test, expect } from '@playwright/test';
 
