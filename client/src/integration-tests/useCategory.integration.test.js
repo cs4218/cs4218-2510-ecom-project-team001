@@ -9,7 +9,7 @@ import categoryModel from "../../../models/categoryModel.js";
 jest.setTimeout(25000);
 
 let server;
-const TEST_PORT = 8081;
+const TEST_PORT = 8082;
 
 beforeAll(async () => {
   await connectToTestDb("jest-category-hook-int");

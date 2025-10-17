@@ -10,7 +10,13 @@ import app from "../../../server.js";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-// Heavily uses Header unit tests code
+/* 
+  Heavily uses Header unit tests code
+  This integration tests:
+  1. Category Products API Integration between Header and useCategory hook (categoryController)
+  2. Cart Context Integration on Logout and Cart Badge Updates
+  3. Auth Integration on Logout in Header and Conditional UI Rendering Based on Auth State
+*/
 
 jest.setTimeout(25000);
 
