@@ -33,6 +33,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         storageState: "./tests/ui/.auth/user.json",
       },
+      grepInvert: [/@admin-only/],
     },
     {
       name: "chromium-admin",
