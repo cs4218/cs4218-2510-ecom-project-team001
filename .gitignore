@@ -26,4 +26,5 @@ notes.txt
 /playwright-report
 # Playwright UI test auth state file
 /**/*/.auth/user.json
+/**/*/.auth/admin.json
 
