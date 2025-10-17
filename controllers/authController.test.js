@@ -161,7 +161,7 @@ jest.mock("validator", () => ({
       expect(orderModel.find).toHaveBeenCalledWith({});
       expect(mockPopulate1).toHaveBeenCalledWith("products", "-photo");
       expect(mockPopulate2).toHaveBeenCalledWith("buyer", "name");
-      expect(mockSort).toHaveBeenCalledWith({ createdAt: "-1" });
+      expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 });
       expect(mockResponse.json).toHaveBeenCalledWith(mockOrders);
     });
 

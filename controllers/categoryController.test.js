@@ -337,7 +337,7 @@ describe("categoryController", () => {
       expect(mockedRes.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error While getting Single Category",
+          message: "Error while getting Single Category",
         })
       );
     });
