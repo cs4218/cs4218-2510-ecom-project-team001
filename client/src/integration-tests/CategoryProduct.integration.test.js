@@ -132,7 +132,13 @@ describe('CategoryProduct Integration Tests', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/product/laptop');
   });
 
-
+  test('should navigate to 404 for non-existent category', async () => {
+    renderCategoryProduct('non-existent category');
+    
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/404');
+    });
+  });
 
   test('should display empty results for category with no products', async () => {
     await categoryModel.create({
