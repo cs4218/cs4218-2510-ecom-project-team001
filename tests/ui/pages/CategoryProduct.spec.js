@@ -8,21 +8,25 @@ import { test, expect } from '@playwright/test';
 
 test.describe('CategoryProduct Page', () => {
   const testCategorySlug = 'electronics';
-  const testCategoriesSlugs = ['electronics', 'book', 'clothing']
+  const testCategoriesSlugs = ['electronics', 'book', 'clothing'];
 
-  test('should show all categories', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto("/categories");
-    
-    // Check if all test categories are visible on the page
+  })
+
+  test('should correctly load all categories', async ({ page }) => {
     for (const slug of testCategoriesSlugs) {
       await expect(page.getByRole('link', { name: slug, exact: false })).toBeVisible();
     }
+  });
 
-    // Check if clicking the category redirects to the correct category page
-    const electronicsCategoryButton = page.getByRole('link', { name: 'Electronics', exact: false });
-    await electronicsCategoryButton.click();
-
-    await expect(page).toHaveURL("/category/electronics");
+  test('should navigate to category page on category click', async ({ page }) => {
+    for (const slug of testCategoriesSlugs) {
+      await page.getByRole('link', { name: slug, exact: false }).click();
+      await expect(page).toHaveURL(`/category/${slug}`);
+      await expect(page.getByRole('heading', { name: `Category - ${slug}`, exact: false })).toBeVisible();
+      await page.goto("/categories");
+    }
   });
 
   test('should display products of a category', async ({ page }) => {

@@ -33,7 +33,7 @@ testUser.describe("Home Page", () => {
 
     testUser('should load all categories successfully', async ({ page }) => {
         await expect(page.getByRole('heading', { name: 'Filter By Category' })).toBeVisible();
-        await expect(page.getByRole('checkbox', { name: 'Gadgets' })).toBeVisible();
+        await expect(page.getByRole('checkbox', { name: 'Electronics' })).toBeVisible();
         await expect(page.getByRole('checkbox', { name: 'Book' })).toBeVisible();
         await expect(page.getByRole('checkbox', { name: 'Clothing' })).toBeVisible();
     })
@@ -55,7 +55,7 @@ testUser.describe("Home Page", () => {
     })
 
     testUser('should filter products by category', async ({ page }) => {
-        await page.getByRole('checkbox', { name: 'Gadgets' }).check();
+        await page.getByRole('checkbox', { name: 'Electronics' }).check();
         await expect(page.getByRole('article', { name: 'Smartphone'})).toBeVisible();
         await expect(page.getByRole('article', { name: 'Laptop'})).toBeVisible();
         const list = page.locator('[aria-label="product-list"]');
