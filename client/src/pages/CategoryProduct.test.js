@@ -57,6 +57,10 @@ describe("CategoryProduct Component", () => {
     ]
   };
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe("Component Rendering", () => {
     // Equivalence partitioning on the loading states and product arrays
     test("renders loading state initially", () => {
@@ -113,13 +117,16 @@ describe("CategoryProduct Component", () => {
       expect(smartphonePrice).toBeInTheDocument();
     });
 
-    test("does not crash when category is not found", async () => {
+    test("should navigate to 404 page when category is not found", async () => {
       // Arrange
-      mockUseParams.mockResolvedValueOnce({slug: "non-exists"});
-      mockedAxios.get.mockResolvedValue({ data: 
-        {
-          category: null,
-          products: null
+      mockUseParams.mockReturnValueOnce({slug: "non-exists"});
+      mockedAxios.get.mockRejectedValueOnce({
+        response: {
+          status: 404,
+          data: {
+            success: false,
+            message: "Category not found"
+          }
         }
       });
 
@@ -131,7 +138,9 @@ describe("CategoryProduct Component", () => {
       );
 
       // Assert
-      expect(await screen.findByText("Category -")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith("/404");
+      });
     });
 
     test("handles empty products array", async () => {
@@ -151,7 +160,9 @@ describe("CategoryProduct Component", () => {
       );
 
       // Assert
-      expect(await screen.findByText("Category - Electronics")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Category - Electronics")).toBeInTheDocument();
+      });
       expect(await screen.findByText("0 result found")).toBeInTheDocument();
     });
 
@@ -245,7 +256,7 @@ describe("CategoryProduct Component", () => {
 
     test("does not call API when slug is not provided", () => {
       // Arrange
-      mockUseParams.mockResolvedValueOnce({});
+      mockUseParams.mockReturnValueOnce({});
       
       // Act
       render(
