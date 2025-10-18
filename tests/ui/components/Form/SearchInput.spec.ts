@@ -11,8 +11,20 @@ testUser.beforeEach(async ({ page }) => {
     await page.goto("/");
 })
 
+/*
+chatgpt is used to aid in creation of the test cases below
+
+=====================================================
+Integration testing involving
+1. components/Form/SearchInput.js
+2. context/search.js,
+3. pages/Search.js components
+=====================================================
+
+*/
+
 testUser.describe("Search Input", () => {
-    // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js components
+
     testUser('should return correct search result for full keyword of a single valid product', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('Laptop');
@@ -22,7 +34,6 @@ testUser.describe("Search Input", () => {
         await expect(page.getByRole('img', { name: 'Laptop' })).toBeVisible();
     });
 
-    // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js components
     testUser('should return correct search result for partial keyword of a single valid product', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('No');
@@ -32,7 +43,6 @@ testUser.describe("Search Input", () => {
         await expect(page.getByRole('img', { name: 'Novel' })).toBeVisible();
     });
 
-    // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js components
     testUser('should return correct search result for partial keyword of multiple valid products', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('Best');
@@ -46,7 +56,6 @@ testUser.describe("Search Input", () => {
         await expect(page.getByText('A bestselling book in')).toBeVisible();
     });
 
-    // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js components
     testUser('should return no products found for invalid product keyword', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('Random');
@@ -54,7 +63,6 @@ testUser.describe("Search Input", () => {
         await expect(page.getByRole('heading', { name: 'No Products Found' })).toBeVisible();
     });
 
-    // test involves components/Form/SearchInput.js, context/search.js, pages/Search.js, pages/CartPage.js components,
     testUser('should maintain search context', async ({ page }) => {
         await page.getByRole('searchbox', { name: 'Search' }).click();
         await page.getByRole('searchbox', { name: 'Search' }).fill('Laptop');

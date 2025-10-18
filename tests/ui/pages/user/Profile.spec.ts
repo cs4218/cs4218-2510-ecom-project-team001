@@ -6,6 +6,17 @@ export const testUser = base.extend({
 });
 
 
+/*
+chatgpt is used to aid in creation of the test cases below
+
+=====================================================
+Integration testing involving
+1. controllers/authController.js (updateProfileController)
+2. pages/user/Profile.js components
+=====================================================
+
+*/
+
 testUser.beforeEach(async ({ page }) => {
     // go to the profile page
     await page.goto("/");
