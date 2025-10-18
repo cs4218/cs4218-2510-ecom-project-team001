@@ -3,9 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import UserMenu from '../../components/UserMenu';
 
-const renderWithRouter = (initialEntry = '/') =>
+const renderWithRouter = () =>
   render(
-    <MemoryRouter initialEntries={[initialEntry]}>
+    <MemoryRouter initialEntries={['/dashboard/user/profile']}>
       <UserMenu />
       <Routes>
         <Route
