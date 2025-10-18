@@ -181,7 +181,7 @@ export const updateProductController = async (req, res) => {
       case !shipping:
         return res.status(400).send({ error: "Shipping is Required" });
 
-      case !photo || (photo && photo.size > 1000000):
+      case photo && photo.size > 1000000:
         return res
           .status(400)
           .send({ error: "Photo is Required and should be less than 1mb" });
@@ -218,7 +218,11 @@ export const productFiltersController = async (req, res) => {
     const { checked, radio } = req.body;
     let args = {};
 
-    if (!Array.isArray(checked) || !Array.isArray(radio) || (radio.length !== 0 && radio.length !== 2)) {
+    if (
+      !Array.isArray(checked) ||
+      !Array.isArray(radio) ||
+      (radio.length !== 0 && radio.length !== 2)
+    ) {
       return res.status(400).send({
         success: false,
         error: new Error("Invalid filter"),
@@ -427,7 +431,7 @@ export const brainTreePaymentController = async (req, res) => {
     cart.map((i) => {
       total += i.price;
     });
-    let newTransaction = gateway.transaction.sale(
+    let _newTransaction = gateway.transaction.sale(
       {
         amount: total,
         paymentMethodNonce: nonce,
@@ -437,7 +441,7 @@ export const brainTreePaymentController = async (req, res) => {
       },
       function (error, result) {
         if (result) {
-          const order = new orderModel({
+          const _order = new orderModel({
             products: cart,
             payment: result,
             buyer: req.user._id,

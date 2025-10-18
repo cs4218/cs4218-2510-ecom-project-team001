@@ -238,7 +238,6 @@ describe("productController integration", () => {
     ["category", "", "Category is Required"],
     ["quantity", "", "Quantity is Required"],
     ["shipping", undefined, "Shipping is Required"],
-    ["photo", undefined, "Photo is Required and should be less than 1mb"],
   ])(
     "PUT /update-product/:pid returns 400 when %s is missing",
     async (missingField, missingValue, expectedError) => {

@@ -178,6 +178,7 @@ const UpdateProduct = () => {
                   placeholder="write a name"
                   className="form-control"
                   onChange={(e) => setName(e.target.value)}
+                  data-testid="name-input"
                 />
               </div>
               <div className="mb-3">
@@ -187,6 +188,7 @@ const UpdateProduct = () => {
                   placeholder="write a description"
                   className="form-control"
                   onChange={(e) => setDescription(e.target.value)}
+                  data-testid="description-input"
                 />
               </div>
 
@@ -197,6 +199,7 @@ const UpdateProduct = () => {
                   placeholder="write a Price"
                   className="form-control"
                   onChange={(e) => setPrice(e.target.value)}
+                  data-testid="price-input"
                 />
               </div>
               <div className="mb-3">
@@ -206,6 +209,7 @@ const UpdateProduct = () => {
                   placeholder="write a quantity"
                   className="form-control"
                   onChange={(e) => setQuantity(e.target.value)}
+                  data-testid="quantity-input"
                 />
               </div>
               <div className="mb-3">
@@ -223,7 +227,7 @@ const UpdateProduct = () => {
                     <span data-testid="select-no-option-label">No</span>
                   </Option>
                   <Option value="1" data-testid="select-yes-option">
-                    Yes
+                    <span data-testid="select-yes-option-label">Yes</span>
                   </Option>
                 </Select>
               </div>
