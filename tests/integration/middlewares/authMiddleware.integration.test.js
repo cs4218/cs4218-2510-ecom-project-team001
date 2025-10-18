@@ -59,10 +59,10 @@ describe('Auth Middleware Integration Tests', () => {
         await adminUser.save();
 
         nonAdminToken = jwt.sign({ _id: nonAdminUser._id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
+            expiresIn: "7d",
         });
         adminToken = jwt.sign({ _id: adminUser._id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
+            expiresIn: "7d",
         });
     });
 

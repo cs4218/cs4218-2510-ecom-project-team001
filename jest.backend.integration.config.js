@@ -7,6 +7,7 @@ export default {
     "<rootDir>/tests/integration/controllers/authController.integration.test.js",
     "<rootDir>/tests/integration/controllers/payment.integration.test.js",
     "<rootDir>/tests/integration/middlewares/authMiddleware.integration.test.js",
+    "<rootDir>/tests/integration/controllers/authControllerLoginRegisterForgot.integration.test.js",
   ],
   // TODO: re-introduce coverage
   collectCoverage: false,
