@@ -172,7 +172,7 @@ describe('AdminOrders Page - Integration', () => {
 
     // Assert - product names appear
     productsForOrders.forEach(async (p) => {
-      await screen.findByText(p.name);
+      await screen.findAllByText(p.name);
     });
 
     // Assert - orders are showing up: locate table cells that equal "4" exactly (to assert the qty)
