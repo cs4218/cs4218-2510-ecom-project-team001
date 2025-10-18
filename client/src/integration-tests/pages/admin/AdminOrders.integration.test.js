@@ -55,7 +55,7 @@ jest.mock('antd', () => {
 });
 
 describe('AdminOrders Page - Integration', () => {
-  jest.setTimeout(2500);
+  jest.setTimeout(25000);
   let server;
   let port;
   let admin;

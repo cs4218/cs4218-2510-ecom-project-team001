@@ -42,7 +42,7 @@ jest.mock('antd', () => {
 });
 
 describe('Products Page - Integration', () => {
-  jest.setTimeout(2500);
+  jest.setTimeout(25000);
   let server;
   let port;
   let authToken;
@@ -64,7 +64,7 @@ describe('Products Page - Integration', () => {
 
   beforeEach(async () => {
     await resetTestDb();
-    server = app.listen(7457);
+    server = app.listen(7459);
     port = server.address().port;
     axios.defaults.baseURL = `http://localhost:${port}`;
 

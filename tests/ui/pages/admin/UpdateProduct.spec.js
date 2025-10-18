@@ -1,4 +1,6 @@
 import { expect, test as base } from "@playwright/test";
+import fs from "fs";
+import path from "path";
 import productModel from "../../../../models/productModel";
 import categoryModel from "../../../../models/categoryModel";
 import connectDB, { disconnectDB } from "../../../../config/db.js";
@@ -13,7 +15,9 @@ test.describe("Update Product Page", () => {
   let testProduct;
   let testCategory;
 
-  const tinyBuffer = Buffer.from("tiny");
+  const productImage = fs.readFileSync(
+    path.resolve(process.cwd(), "tests/fixtures/test-product.png")
+  );
 
   test.beforeAll(async ({ browser }) => {
     context = await browser.newContext();
@@ -37,7 +41,7 @@ test.describe("Update Product Page", () => {
       category: testCategory._id,
       quantity: 2,
       photo: {
-        data: tinyBuffer,
+        data: productImage,
         contentType: "image/png",
       },
       shipping: true,

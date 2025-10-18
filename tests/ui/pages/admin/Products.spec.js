@@ -1,4 +1,6 @@
 import { test as base, expect } from "@playwright/test";
+import fs from "fs";
+import path from "path";
 import productModel from "../../../../models/productModel";
 import categoryModel from "../../../../models/categoryModel";
 import connectDB, { disconnectDB } from "../../../../config/db";
@@ -14,7 +16,9 @@ test.describe("Admin Products Page", () => {
   let insertedProducts = [];
   let testCategory;
 
-  const tinyBuffer = Buffer.from("tiny");
+  const productImage = fs.readFileSync(
+    path.resolve(process.cwd(), "tests/fixtures/test-product.png")
+  );
   const testCategorySlug = "e2e-products-category";
 
   test.beforeAll(async ({ browser }) => {
@@ -43,7 +47,7 @@ test.describe("Admin Products Page", () => {
       price: p.price ?? 0,
       category: testCategory._id,
       quantity: p.quantity ?? 1,
-      photo: { data: tinyBuffer, contentType: "image/png" },
+      photo: { data: productImage, contentType: "image/png" },
       shipping: p.shipping ?? true,
     }));
 
