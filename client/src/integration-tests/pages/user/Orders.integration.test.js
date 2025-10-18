@@ -37,6 +37,17 @@ jest.mock("../../../context/auth", () => ({
   ]),
 }));
 
+/*
+chatgpt is used to aid in creation of the test cases below
+
+=====================================================
+Integration testing involving
+1. pages/user/Orders.js
+2. controllers/authController.js (getOrdersController)
+=====================================================
+
+*/
+
 describe("Orders Page - Integration", () => {
   let server;
   let port;
