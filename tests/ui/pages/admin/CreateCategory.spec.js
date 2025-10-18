@@ -1,142 +1,128 @@
 import { test as base, expect } from "@playwright/test";
+import connectDB, { disconnectDB } from "../../../../config/db";
+import categoryModel from "../../../../models/categoryModel";
 
-export const testAdmin = base.extend({
+const test = base.extend({
   storageState: "tests/ui/.auth/admin.json",
 });
 
-const cleanupCategories = async (page) => {
-  await page.goto("/dashboard/admin/create-category");
-  const categoryNames = await page
-    .locator("tbody tr td:nth-child(1)")
-    .allTextContents();
+const cleanupCategories = async () => {
+  const categoriesToDelete = [
+    "Accessories",
+    "Accessories By Cheng Hou",
+    "Accessories by Li Yuan",
+    "Accessories by Aaron",
+  ];
 
-  for (const name of categoryNames) {
-    const categoriesToDelete = [
-      "Accessories",
-      "Accessories By Cheng Hou",
-      "Accessories by Li Yuan",
-      "Accessories by Aaron",
-    ];
-    if (categoriesToDelete.includes(name)) {
-      await page
-        .getByRole("row", { name: new RegExp(`^${name} Edit Delete$`) })
-        .getByRole("button")
-        .nth(1)
-        .click();
-    }
-  }
+  await categoryModel.deleteMany({ name: { $in: categoriesToDelete } });
 };
 
-testAdmin.describe("Create Category Page", () => {
+test.describe("Create Category Page", () => {
   let context;
   let page;
 
-  testAdmin.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }) => {
     context = await browser.newContext();
     page = await context.newPage();
+
+    await connectDB();
   });
 
-  testAdmin.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     // Ensure that categories used in tests are cleaned up
-    await cleanupCategories(page);
+    await cleanupCategories();
   });
 
-  testAdmin.afterEach(async ({ page }) => {
+  test.afterEach(async () => {
     // Ensure that categories used in tests are cleaned up
-    await cleanupCategories(page);
+    await cleanupCategories();
   });
 
-  testAdmin(
-    "@admin-only should allow me to create a non-empty category",
-    async ({ page }) => {
-      // Arrange
-      await page.goto("/dashboard/admin/create-category");
-      // Act
-      await page
-        .getByRole("textbox", { name: "Enter new category (max" })
-        .click();
-      await page
-        .getByRole("textbox", { name: "Enter new category (max" })
-        .fill("Accessories");
-      await page.getByRole("button", { name: "Submit" }).click();
+  test.afterAll(async () => {
+    await disconnectDB();
+  });
 
-      // Assert
-      const lastRow = page.locator("tbody tr").last();
-      await expect(lastRow).toContainText("Accessories");
+  test("@admin-only should allow me to create a non-empty category", async ({
+    page,
+  }) => {
+    // Arrange
+    await page.goto("/dashboard/admin/create-category");
+    // Act
+    await page
+      .getByRole("textbox", { name: "Enter new category (max" })
+      .click();
+    await page
+      .getByRole("textbox", { name: "Enter new category (max" })
+      .fill("Accessories");
+    await page.getByRole("button", { name: "Submit" }).click();
 
-      // Cleanup
-      await page
-        .getByRole("row", { name: "Accessories" })
-        .getByRole("button", { name: "Delete" })
-        .click();
-      await expect(page.getByText("category is deleted")).toBeVisible();
-    }
-  );
+    // Assert
+    const lastRow = page.locator("tbody tr").last();
+    await expect(lastRow).toContainText("Accessories");
+  });
 
-  testAdmin(
-    "@admin-only should allow me to update an existing category",
-    async ({ page }) => {
-      // Arrange
-      // Add an existing category
-      await page.goto("/dashboard/admin/create-category");
-      await page
-        .getByRole("textbox", { name: "Enter new category (max" })
-        .click();
-      await page
-        .getByRole("textbox", { name: "Enter new category (max" })
-        .fill("Accessories by Aaron");
-      await page.getByRole("button", { name: "Submit" }).click();
+  test("@admin-only should allow me to update an existing category", async ({
+    page,
+  }) => {
+    // Arrange
+    // Add an existing category
+    await page.goto("/dashboard/admin/create-category");
+    await page
+      .getByRole("textbox", { name: "Enter new category (max" })
+      .click();
+    await page
+      .getByRole("textbox", { name: "Enter new category (max" })
+      .fill("Accessories by Aaron");
+    await page.getByRole("button", { name: "Submit" }).click();
 
-      // Act
-      await page
-        .getByRole("row", { name: "Accessories by Aaron Edit Delete" })
-        .getByRole("button")
-        .first()
-        .click();
-      await page
-        .getByRole("dialog", { name: "Update Category" })
-        .getByPlaceholder("Enter new category (max")
-        .click();
-      await page
-        .getByRole("dialog", { name: "Update Category" })
-        .getByPlaceholder("Enter new category (max")
-        .press("ControlOrMeta+a");
-      await page
-        .getByRole("dialog", { name: "Update Category" })
-        .getByPlaceholder("Enter new category (max")
-        .fill("Accessories By Cheng Hou");
-      await page
-        .getByLabel("Update Category")
-        .getByRole("button", { name: "Submit" })
-        .click();
-      // Assert
-      await expect(page.locator("tbody")).toContainText(
-        "Accessories By Cheng Hou"
-      );
-    }
-  );
+    // Act
+    await page
+      .getByRole("row", { name: "Accessories by Aaron Edit Delete" })
+      .getByRole("button")
+      .first()
+      .click();
+    await page
+      .getByRole("dialog", { name: "Update Category" })
+      .getByPlaceholder("Enter new category (max")
+      .click();
+    await page
+      .getByRole("dialog", { name: "Update Category" })
+      .getByPlaceholder("Enter new category (max")
+      .press("ControlOrMeta+a");
+    await page
+      .getByRole("dialog", { name: "Update Category" })
+      .getByPlaceholder("Enter new category (max")
+      .fill("Accessories By Cheng Hou");
+    await page
+      .getByLabel("Update Category")
+      .getByRole("button", { name: "Submit" })
+      .click();
+    // Assert
+    await expect(page.locator("tbody")).toContainText(
+      "Accessories By Cheng Hou"
+    );
+  });
 
-  testAdmin(
-    "@admin-only should allow me to delete an existing category",
-    async ({ page }) => {
-      // Arrange
-      // Add an existing category
-      await page.goto("/dashboard/admin/create-category");
-      await page
-        .getByRole("textbox", { name: "Enter new category (max" })
-        .click();
-      await page
-        .getByRole("textbox", { name: "Enter new category (max" })
-        .fill("Accessories by Li Yuan");
-      await page.getByRole("button", { name: "Submit" }).click();
+  test("@admin-only should allow me to delete an existing category", async ({
+    page,
+  }) => {
+    // Arrange
+    // Add an existing category
+    await page.goto("/dashboard/admin/create-category");
+    await page
+      .getByRole("textbox", { name: "Enter new category (max" })
+      .click();
+    await page
+      .getByRole("textbox", { name: "Enter new category (max" })
+      .fill("Accessories by Li Yuan");
+    await page.getByRole("button", { name: "Submit" }).click();
 
-      // Act
-      await page
-        .getByRole("row", { name: "Accessories by Li Yuan" })
-        .getByRole("button", { name: "Delete" })
-        .click();
-      // Assert - Success toast shows up
-      await expect(page.getByText("category is deleted")).toBeVisible();
-    }
-  );
+    // Act
+    await page
+      .getByRole("row", { name: "Accessories by Li Yuan" })
+      .getByRole("button", { name: "Delete" })
+      .click();
+    // Assert - Success toast shows up
+    await expect(page.getByText("category is deleted")).toBeVisible();
+  });
 });
