@@ -64,7 +64,7 @@ describe('HomePage Real Integration Tests', () => {
     localStorage.clear();
     await resetTestDb();
     
-    const PORT = 8084;
+    const PORT = 8088;
     server = app.listen(PORT);
     axios.defaults.baseURL = `http://localhost:${PORT}`;
     
@@ -90,16 +90,16 @@ describe('HomePage Real Integration Tests', () => {
       name: 'Books',
       slug: 'books',
     });
-    const gadgetsCategory = await categoryModel.create({
-      name: 'Gadgets',
-      slug: 'gadgets',
+    const electronicsCategory = await categoryModel.create({
+      name: 'Electronics',
+      slug: 'electronics',
     });
     const clothingCategory = await categoryModel.create({
       name: 'Clothing',
       slug: 'clothing',
     });
 
-    testCategories = [booksCategory, gadgetsCategory, clothingCategory];
+    testCategories = [booksCategory, electronicsCategory, clothingCategory];
 
     await request(app)
       .post('/api/v1/product/create-product')
@@ -118,7 +118,7 @@ describe('HomePage Real Integration Tests', () => {
       .field('name', 'Beta')
       .field('description', 'desc B')
       .field('price', '15')
-      .field('category', gadgetsCategory._id.toString())
+      .field('category', electronicsCategory._id.toString())
       .field('quantity', '20')
       .field('shipping', '1')
       .attach('photo', tinyBuffer, 'beta.png');
@@ -139,18 +139,18 @@ describe('HomePage Real Integration Tests', () => {
     jest.clearAllMocks();
   });
 
-  test("should fetch categories from real database via get-category route", async () => {
+  test("should fetch categories via get-category route", async () => {
     renderHome();
 
     await waitFor(() => {
       expect(screen.getByRole('checkbox', { name: 'Books' })).toBeInTheDocument();
     });
 
-    expect(screen.getByRole('checkbox', { name: 'Gadgets' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Electronics' })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Clothing' })).toBeInTheDocument();
   });
 
-  test("should fetch and display products from real database via product-list route", async () => {
+  test("should fetch and display products via product-list route", async () => {
     renderHome();
 
     await waitFor(() => {
@@ -161,7 +161,7 @@ describe('HomePage Real Integration Tests', () => {
     expect(screen.getByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
   });
 
-  test("should get correct product count from database via product-count route", async () => {
+  test("should get correct product count via product-count route", async () => {
     renderHome();
 
     await waitFor(() => {
@@ -172,7 +172,7 @@ describe('HomePage Real Integration Tests', () => {
     expect(products).toHaveLength(3);
   });
 
-  test("should filter products by single category through real product-filters route", async () => {
+  test("should filter products by single category via product-filters route", async () => {
     renderHome();
 
     await waitFor(() => {
@@ -182,14 +182,14 @@ describe('HomePage Real Integration Tests', () => {
     fireEvent.click(screen.getByRole("checkbox", { name: "Books" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
+      expect(screen.queryByRole("article", { name: "Product: Beta" })).not.toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("article", { name: "Product: Beta" })).not.toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
     expect(screen.queryByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
   });
 
-  test("should filter products by multiple categories through real product-filters route", async () => {
+  test("should filter products by multiple categories via product-filters route", async () => {
     renderHome();
 
     await waitFor(() => {
@@ -197,53 +197,51 @@ describe('HomePage Real Integration Tests', () => {
     });
 
     fireEvent.click(screen.getByRole("checkbox", { name: "Books" }));
-    fireEvent.click(screen.getByRole("checkbox", { name: "Gadgets" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Electronics" }));
 
-    // Should show Books and Gadgets products
+    // Should show Books and Electronics products
     await waitFor(() => {
-      expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
+      expect(screen.queryByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
     });
 
     expect(screen.getByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
-    expect(screen.queryByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
   });
 
-  test("should filter products by price range through real product-filters route", async () => {
+  test("should filter products by price range via product-filters route", async () => {
     renderHome();
 
     await waitFor(() => {
       expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
     });
 
-    // Apply $60 - $79.99 price filter
-    fireEvent.click(screen.getByRole("radio", { name: "$60 - $79.99" }));
+    fireEvent.click(screen.getByRole("radio", { name: "$60 to 79.99" }));
 
     // Should only show Gamma (price $65)
     await waitFor(() => {
-      expect(screen.getByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
+      expect(screen.queryByRole("article", { name: "Product: Alpha" })).not.toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("article", { name: "Product: Alpha" })).not.toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
     expect(screen.queryByRole("article", { name: "Product: Beta" })).not.toBeInTheDocument();
   });
 
-  test("should filter products by both category and price through real product-filters route", async () => {
+  test("should filter products by both category and price via product-filters route", async () => {
     renderHome();
 
     await waitFor(() => {
       expect(screen.getByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
     });
 
-    // Apply Gadgets category and $10 - $19.99 price filter
-    fireEvent.click(screen.getByRole("checkbox", { name: "Gadgets" }));
-    fireEvent.click(screen.getByRole("radio", { name: "$10 - $19.99" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Electronics" }));
+    fireEvent.click(screen.getByRole("radio", { name: "$0 to 19.99" }));
 
-    // Should only show Beta (Gadgets, price $15)
+    // Should only show Beta (Electronics, price $15)
     await waitFor(() => {
-      expect(screen.getByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
+      expect(screen.queryByRole("article", { name: "Product: Alpha" })).not.toBeInTheDocument();
     });
-
-    expect(screen.queryByRole("article", { name: "Product: Alpha" })).not.toBeInTheDocument();
+    
+    expect(screen.getByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
     expect(screen.queryByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
   });
 
@@ -254,7 +252,6 @@ describe('HomePage Real Integration Tests', () => {
 
     fireEvent.click(within(alphaCard).getByRole("button", { name: "ADD TO CART" }));
 
-    // Verify localStorage was updated
     const cartData = JSON.parse(localStorage.getItem('cart'));
     expect(cartData).toHaveLength(1);
     expect(cartData[0].name).toBe('Alpha');
@@ -268,7 +265,6 @@ describe('HomePage Real Integration Tests', () => {
       expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
     });
 
-    // Apply filter
     fireEvent.click(screen.getByRole("checkbox", { name: "Books" }));
 
     await waitFor(() => {
@@ -278,7 +274,6 @@ describe('HomePage Real Integration Tests', () => {
     // Reset filters
     fireEvent.click(screen.getByRole("button", { name: "RESET FILTERS" }));
 
-    // All products should be visible again
     await waitFor(() => {
       expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
     });
@@ -288,7 +283,7 @@ describe('HomePage Real Integration Tests', () => {
   });
 
   test("should load more products when LOAD MORE button is clicked", async () => {
-    // Create more products to enable load more functionality
+    // Create more products
     const extraProducts = [];
     for (let i = 0; i < 10; i++) {
       await request(app)
@@ -305,7 +300,6 @@ describe('HomePage Real Integration Tests', () => {
 
     renderHome();
 
-    // Wait for initial products to load
     await waitFor(() => {
       expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
     });
@@ -313,7 +307,6 @@ describe('HomePage Real Integration Tests', () => {
     const initialProducts = screen.getAllByRole("article");
     const initialCount = initialProducts.length;
 
-    // Click load more if button exists
     const loadMoreButton = screen.queryByRole("button", { name: /Loadmore/i });
     fireEvent.click(loadMoreButton);
 
@@ -323,7 +316,7 @@ describe('HomePage Real Integration Tests', () => {
     });
   });
 
-  test("should navigate to product details when More Details is clicked", async () => {
+  test("should navigate to product details when \"More Details\" is clicked", async () => {
     const mockNavigate = jest.fn();
     jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
 
