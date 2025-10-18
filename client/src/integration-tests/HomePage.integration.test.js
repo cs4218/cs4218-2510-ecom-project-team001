@@ -146,32 +146,23 @@ describe('HomePage Integration Tests', () => {
   test("should fetch categories via get-category route", async () => {
     renderHome();
 
-    await waitFor(() => {
-      expect(screen.getByRole('checkbox', { name: 'Books' })).toBeInTheDocument();
-    });
-
-    expect(screen.getByRole('checkbox', { name: 'Electronics' })).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Clothing' })).toBeInTheDocument();
+    expect(await screen.findByRole('checkbox', { name: 'Books' })).toBeInTheDocument();
+    expect(await screen.findByRole('checkbox', { name: 'Electronics' })).toBeInTheDocument();
+    expect(await screen.findByRole('checkbox', { name: 'Clothing' })).toBeInTheDocument();
   });
 
   test("should fetch and display products via product-list route", async () => {
     renderHome();
 
-    await waitFor(() => {
-      expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
-    });
-
-    expect(screen.getByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
-    expect(screen.getByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
+    expect(await screen.findByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
+    expect(await screen.findByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
+    expect(await screen.findByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
   });
 
   test("should get correct product count via product-count route", async () => {
     renderHome();
 
-    await waitFor(() => {
-      expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
-    });
-
+    expect(await screen.findByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
     const products = screen.getAllByRole("article");
     expect(products).toHaveLength(3);
   });
@@ -203,7 +194,10 @@ describe('HomePage Integration Tests', () => {
     fireEvent.click(screen.getByRole("checkbox", { name: "Books" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "Electronics" }));
 
-    expect(await screen.findByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
+    await waitFor(() => {
+        expect(screen.queryByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
+    });
+    
     expect(await screen.findByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
     expect(await screen.findByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
   });
@@ -218,9 +212,12 @@ describe('HomePage Integration Tests', () => {
     fireEvent.click(screen.getByRole("radio", { name: "$60 to 79.99" }));
 
     // Should only show Gamma (price $65)
-    expect(await screen.findByRole("article", { name: "Product: Alpha" })).not.toBeInTheDocument();
-    expect(await screen.findByRole("article", { name: "Product: Beta" })).not.toBeInTheDocument();
+    await waitFor(() => {
+        expect(screen.queryByRole("article", { name: "Product: Alpha" })).not.toBeInTheDocument();
+    });
+
     expect(await screen.findByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
+    expect(screen.queryByRole("article", { name: "Product: Beta" })).not.toBeInTheDocument();
   });
 
   test("should filter products by both category and price via product-filters route", async () => {
@@ -234,9 +231,12 @@ describe('HomePage Integration Tests', () => {
     fireEvent.click(screen.getByRole("radio", { name: "$0 to 19.99" }));
 
     // Should only show Beta (Electronics, price $15)
-    expect(await screen.findByRole("article", { name: "Product: Alpha" })).not.toBeInTheDocument();
-    expect(await screen.findByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
+    await waitFor(() => {
+        expect(screen.queryByRole("article", { name: "Product: Alpha" })).not.toBeInTheDocument();
+    });
+    
     expect(await screen.findByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
+    expect(screen.queryByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
   });
 
   test("should add product to cart and persist to localStorage", async () => {
@@ -260,10 +260,13 @@ describe('HomePage Integration Tests', () => {
     expect(await screen.findByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("checkbox", { name: "Books" }));
-    
+
+    await waitFor(() => {
+        expect(screen.queryByRole("article", { name: "Product: Beta" })).not.toBeInTheDocument();
+    });
+   
     expect(await screen.findByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
-    expect(await screen.findByRole("article", { name: "Product: Beta" })).not.toBeInTheDocument();
-    expect(await screen.findByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
 
     // Reset filters
     fireEvent.click(screen.getByRole("button", { name: "RESET FILTERS" }));
