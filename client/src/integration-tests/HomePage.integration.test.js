@@ -24,7 +24,11 @@ import { connectToTestDb, resetTestDb, disconnectFromTestDb } from '../../../tes
  * Tests and test data have been written in part with the help of AI
  */
 
-
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockNavigate,
+}));
 jest.mock('../components/Layout', () => {
   return function MockLayout({ children }) {
     return <div data-testid="layout">{children}</div>;
@@ -40,7 +44,7 @@ const renderHome = () =>
     </MemoryRouter>
   );
 
-describe('HomePage Real Integration Tests', () => {
+describe('HomePage Integration Tests', () => {
   let server;
   let authToken;
   let testCategories = [];
@@ -271,31 +275,33 @@ describe('HomePage Real Integration Tests', () => {
       expect(screen.queryByRole("article", { name: "Product: Beta" })).not.toBeInTheDocument();
     });
 
+    expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
+    expect(screen.queryByRole("article", { name: "Product: Gamma" })).not.toBeInTheDocument();
+
     // Reset filters
     fireEvent.click(screen.getByRole("button", { name: "RESET FILTERS" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
+      expect(screen.getByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
   });
 
   test("should load more products when LOAD MORE button is clicked", async () => {
     // Create more products
-    const extraProducts = [];
     for (let i = 0; i < 10; i++) {
-      await request(app)
-        .post('/api/v1/product/create-product')
-        .set('authorization', authToken)
-        .field('name', `Extra Product ${i}`)
-        .field('description', `desc ${i}`)
-        .field('price', '25')
-        .field('category', testCategories[0]._id.toString())
-        .field('quantity', '5')
-        .field('shipping', '1')
-        .attach('photo', tinyBuffer, `extra${i}.png`);
+        await request(app)
+            .post('/api/v1/product/create-product')
+            .set('authorization', authToken)
+            .field('name', `Extra Product ${i}`)
+            .field('description', `desc ${i}`)
+            .field('price', '25')
+            .field('category', testCategories[0]._id.toString())
+            .field('quantity', '5')
+            .field('shipping', '1')
+            .attach('photo', tinyBuffer, `extra${i}.png`);
     }
 
     renderHome();
@@ -303,6 +309,8 @@ describe('HomePage Real Integration Tests', () => {
     await waitFor(() => {
       expect(screen.getByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
     });
+
+    expect(screen.queryByRole("article", { name: "Extra Product 9" })).not.toBeInTheDocument();
 
     const initialProducts = screen.getAllByRole("article");
     const initialCount = initialProducts.length;
@@ -314,12 +322,13 @@ describe('HomePage Real Integration Tests', () => {
         const updatedProducts = screen.getAllByRole("article");
         expect(updatedProducts.length).toBeGreaterThan(initialCount);
     });
+
+    await waitFor(() => {
+      expect(screen.getByRole("article", { name: "Extra Product 9" })).toBeInTheDocument();
+    });
   });
 
   test("should navigate to product details when \"More Details\" is clicked", async () => {
-    const mockNavigate = jest.fn();
-    jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
-
     renderHome();
 
     const alphaCard = await screen.findByRole("article", { name: "Product: Alpha" });
