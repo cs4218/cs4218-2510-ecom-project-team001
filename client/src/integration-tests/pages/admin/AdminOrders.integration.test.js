@@ -136,13 +136,13 @@ describe('AdminOrders Page - Integration', () => {
     // Create 2 orders, each with 3 products
     await orderModel.create([
       {
-        products: [prods[0]._id, prods[1]._id, prods[2]._id],
+        products: [prods[0]._id, prods[1]._id, prods[2]._id, prods[3]._id],
         payment: { success: true, method: 'card' },
         buyer: buyer1._id,
         status: 'Not Process',
       },
       {
-        products: [prods[3]._id, prods[4]._id, prods[5]._id],
+        products: [prods[0]._id, prods[3]._id, prods[4]._id, prods[5]._id],
         payment: { success: true, method: 'card' },
         buyer: buyer2._id,
         status: 'Processing',
@@ -174,8 +174,11 @@ describe('AdminOrders Page - Integration', () => {
     productsForOrders.forEach(async (p) => {
       await screen.findByText(p.name);
     });
-    // Assert - orders are showing up
-    const quantityCells = screen.getAllByText('3');
+
+    // Assert - orders are showing up: locate table cells that equal "4" exactly (to assert the qty)
+    const quantityCells = await screen.findAllByRole('cell', {
+      name: /^\s*4\s*$/,
+    });
     expect(quantityCells.length).toBeGreaterThanOrEqual(2);
 
     // Status selects should have initial values

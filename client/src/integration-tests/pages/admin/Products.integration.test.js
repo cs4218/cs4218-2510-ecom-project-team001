@@ -15,7 +15,7 @@ import {
 } from '../../../../../tests/utils/db.js';
 
 import UpdateProduct from '../../../pages/admin/UpdateProduct';
-import { products as testProducts } from '../../testData/products.js';
+import { products as testProducts } from '../../../../../tests/utils/testData/products.js';
 import Products from '../../../pages/admin/Products.js';
 
 jest.mock('../../../components/Layout', () => ({ children }) => (

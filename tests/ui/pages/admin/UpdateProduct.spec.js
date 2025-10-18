@@ -7,8 +7,6 @@ const test = base.extend({
   storageState: "tests/ui/.auth/admin.json",
 });
 
-// test.describe.configure({ mode: "parallel" });
-
 test.describe("Update Product Page", () => {
   let context;
   let page;
@@ -40,7 +38,7 @@ test.describe("Update Product Page", () => {
       quantity: 2,
       photo: {
         data: tinyBuffer,
-        contentType: "image/gif",
+        contentType: "image/png",
       },
       shipping: true,
     });
