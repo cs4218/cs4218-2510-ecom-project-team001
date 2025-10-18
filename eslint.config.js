@@ -1,5 +1,9 @@
 import js from "@eslint/js";
 import globals from "globals";
+import playwright from "eslint-plugin-playwright";
+
+const cleanGlobals = (obj) =>
+  Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), v]));
 
 // Add eslint rules to instantly catch static errors e.g. typos
 export default [
@@ -10,18 +14,44 @@ export default [
   js.configs.recommended,
 
   {
-    files: ["**/*.{js,mjs,cjs,jsx}", "**/*.test.{js,mjs,cjs,jsx}", "**/*.spec.{js,mjs,cjs,jsx}"],
+    files: [
+      "**/*.{js,mjs,cjs,jsx}",
+      "**/*.test.{js,mjs,cjs,jsx}",
+      "**/*.spec.{js,mjs,cjs,jsx}",
+    ],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      globals: { ...globals.node, ...globals.jest },
+      globals: {
+        ...cleanGlobals(globals.node),
+        ...cleanGlobals(globals.browser),
+        ...cleanGlobals(globals.jest),
+      },
     },
     rules: {
-      "no-unused-vars": "warn",
+      "no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
       "no-console": "off",
     },
-    env: {
-      "browser": true,
-    }
+  },
+
+  // Playwright-specific
+  {
+    files: [
+      "tests/ui/**/*.spec.{js,mjs,cjs,jsx}",
+      "tests/ui/**/*.test.{js,mjs,cjs,jsx}",
+    ],
+    ...playwright.configs["flat/recommended"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: { ...cleanGlobals(globals.node) },
+    },
   },
 ];
