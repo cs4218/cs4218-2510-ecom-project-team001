@@ -5,6 +5,7 @@ export default {
     "<rootDir>/tests/integration/controllers/productController.integration.test.js",
     "<rootDir>/tests/integration/controllers/categoryController.integration.test.js",
     "<rootDir>/tests/integration/controllers/authController.integration.test.js",
+    "<rootDir>/tests/integration/controllers/payment.integration.test.js",
   ],
   // TODO: re-introduce coverage
   collectCoverage: false,
