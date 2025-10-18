@@ -299,7 +299,7 @@ describe("ProductDetails Component", () => {
 
   test("does not fetch product if no slug in params", () => {
     // Arrange
-    mockUseParams.mockResolvedValueOnce({});
+    mockUseParams.mockReturnValueOnce({});
 
     // Act
     render(
@@ -313,15 +313,17 @@ describe("ProductDetails Component", () => {
     expect(mockedAxios.get).not.toHaveBeenCalled();
   });
 
-  test("does not crash if no product is found", async () => {
+  test("should navigate to 404 page if no product is found", async () => {
     // Arrange
-    mockedAxios.get
-      .mockResolvedValueOnce({
-        data: { product: null }
-      })
-      .mockResolvedValueOnce({
-        data: { products: [] }
-      });
+    mockedAxios.get.mockRejectedValueOnce({
+      response: {
+        status: 404,
+        data: {
+          success: false,
+          message: "Product not found"
+        }
+      }
+    });
 
     // Act
     render(
@@ -331,8 +333,10 @@ describe("ProductDetails Component", () => {
     );
 
     // Assert
-    // Does not crash
-    expect(await screen.findByText("Product Details")).toBeInTheDocument();
+    // Goes to 404 page
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/404");
+    });
   });
 
   test("renders ADD TO CART button", async () => {
