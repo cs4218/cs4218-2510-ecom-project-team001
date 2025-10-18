@@ -253,6 +253,12 @@ describe('HomePage Integration Tests', () => {
   });
 
   test("should reset filters when RESET FILTERS button is clicked", async () => {
+    const reloadMock = jest.fn();
+        Object.defineProperty(window, 'location', {
+        writable: true,
+        value: { reload: reloadMock }
+    });
+
     renderHome();
 
     expect(await screen.findByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
@@ -270,10 +276,8 @@ describe('HomePage Integration Tests', () => {
 
     // Reset filters
     fireEvent.click(screen.getByRole("button", { name: "RESET FILTERS" }));
-
-     expect(await screen.findByRole("article", { name: "Product: Alpha" })).toBeInTheDocument();
-     expect(await screen.findByRole("article", { name: "Product: Beta" })).toBeInTheDocument();
-     expect(await screen.findByRole("article", { name: "Product: Gamma" })).toBeInTheDocument();
+    
+    expect(reloadMock).toHaveBeenCalled();
   });
 
   test("should navigate to product details when \"More Details\" is clicked", async () => {
