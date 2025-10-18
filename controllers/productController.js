@@ -431,7 +431,7 @@ export const brainTreePaymentController = async (req, res) => {
     cart.map((i) => {
       total += i.price;
     });
-    let _newTransaction = gateway.transaction.sale(
+    let newTransaction = gateway.transaction.sale(
       {
         amount: total,
         paymentMethodNonce: nonce,
@@ -439,9 +439,9 @@ export const brainTreePaymentController = async (req, res) => {
           submitForSettlement: true,
         },
       },
-      function (error, result) {
+      async function (error, result) {
         if (result) {
-          const _order = new orderModel({
+          const order = await new orderModel({
             products: cart,
             payment: result,
             buyer: req.user._id,
