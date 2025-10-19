@@ -60,7 +60,8 @@ describe('CartPage Real Integration Tests', () => {
   let authToken;
   let testUser;
   let testCategory;
-  let testProducts = [];
+  let product1;
+  let product2;
   const tinyBuffer = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 
   beforeAll(async () => {
@@ -103,13 +104,12 @@ describe('CartPage Real Integration Tests', () => {
       process.env.JWT_SECRET || 'test-secret'
     );
 
-    // Create test category
     testCategory = await categoryModel.create({
       name: 'Electronics',
       slug: 'electronics',
     });
 
-    // Create test products through API
+    // Create test products through /create-product endpoint
     await request(app)
       .post('/api/v1/product/create-product')
       .set('authorization', authToken)
@@ -120,6 +120,8 @@ describe('CartPage Real Integration Tests', () => {
       .field('quantity', '2')
       .field('shipping', '1')
       .attach('photo', tinyBuffer, 'product1.png');
+
+    product1 = await productModel.findOne({ name: 'Product 1'});
 
     await request(app)
       .post('/api/v1/product/create-product')
@@ -132,7 +134,7 @@ describe('CartPage Real Integration Tests', () => {
       .field('shipping', '1')
       .attach('photo', tinyBuffer, 'product2.png');
 
-    testProducts = await productModel.find({});
+    product2 = await productModel.findOne({ name: 'Product 2' });
 
     jest.clearAllMocks();
   });
@@ -183,7 +185,7 @@ describe('CartPage Real Integration Tests', () => {
       await renderCartPage([], testUser);
       
       expect(await screen.findByText(`Hello ${testUser.name}`)).toBeInTheDocument();
-      expect(await screen.findByText(`Hello ${testUser.address}`)).toBeInTheDocument();
+      expect(await screen.findByText(testUser.address)).toBeInTheDocument();
       expect(await screen.findByText("Your Cart Is Empty")).toBeInTheDocument();
       expect(await screen.findByText("Total: $0.00")).toBeInTheDocument();
     });
@@ -193,18 +195,18 @@ describe('CartPage Real Integration Tests', () => {
     test("should display products from cart from localStorage", async () => {
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
-          quantity: testProducts[0].quantity,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+          quantity: product1.quantity,
         },
         {
-          _id: testProducts[1]._id.toString(),
-          name: testProducts[1].name,
-          price: testProducts[1].price,
-          description: testProducts[1].description,
-          quantity: testProducts[1].quantity,
+          _id: product2._id.toString(),
+          name: product2.name,
+          price: product2.price,
+          description: product2.description,
+          quantity: product2.quantity,
         },
       ];
 
@@ -220,10 +222,10 @@ describe('CartPage Real Integration Tests', () => {
     test("should remove product from cart and update localStorage", async () => {
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
         },
       ];
 
@@ -246,10 +248,10 @@ describe('CartPage Real Integration Tests', () => {
     test("should fetch braintree token from /braintree/token endpoint", async () => {
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
         },
       ];
 
@@ -264,10 +266,10 @@ describe('CartPage Real Integration Tests', () => {
     test("should not show payment section for guest users", async () => {
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
         },
       ];
 
@@ -287,10 +289,10 @@ describe('CartPage Real Integration Tests', () => {
     test("should process payment through braintree/payment endpoint", async () => {
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
         },
       ];
 
@@ -315,16 +317,16 @@ describe('CartPage Real Integration Tests', () => {
     test("should clear cart from localStorage after successful payment", async () => {
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
         },
         {
-          _id: testProducts[1]._id.toString(),
-          name: testProducts[1].name,
-          price: testProducts[1].price,
-          description: testProducts[1].description,
+          _id: product2._id.toString(),
+          name: product2.name,
+          price: product2.price,
+          description: product2.description,
         },
       ];
 
@@ -349,10 +351,10 @@ describe('CartPage Real Integration Tests', () => {
     test("should navigate to dashboard after successful payment", async () => {
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
         },
       ];
 
@@ -376,10 +378,10 @@ describe('CartPage Real Integration Tests', () => {
 
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
         },
       ];
 
@@ -407,16 +409,16 @@ describe('CartPage Real Integration Tests', () => {
     test("should complete full flow: add to cart, view cart, make payment", async () => {
       const cartItems = [
         {
-          _id: testProducts[0]._id.toString(),
-          name: testProducts[0].name,
-          price: testProducts[0].price,
-          description: testProducts[0].description,
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
         },
         {
-          _id: testProducts[1]._id.toString(),
-          name: testProducts[1].name,
-          price: testProducts[1].price,
-          description: testProducts[1].description,
+          _id: product2._id.toString(),
+          name: product2.name,
+          price: product2.price,
+          description: product2.description,
         },
       ];
 
