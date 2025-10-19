@@ -94,7 +94,7 @@ describe('CartPage Integration Tests', () => {
     localStorage.clear();
     await resetTestDb();
     
-    const PORT = 8088;
+    const PORT = 8089;
     server = app.listen(PORT);
     axios.defaults.baseURL = `http://localhost:${PORT}`;
     
