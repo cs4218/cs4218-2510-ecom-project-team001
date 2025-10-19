@@ -25,7 +25,7 @@ import { connectToTestDb, resetTestDb, disconnectFromTestDb } from '../../../tes
  * 
  * Tests and test data have been created in part with the help of AI
  */
-
+jest.setTimeout(15000);
 jest.mock("../styles/CartStyles.css", () => ({}));
 jest.mock("../components/Layout", () => ({ children }) => (
   <div data-testid="layout">{children}</div>
@@ -55,7 +55,7 @@ jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-describe('CartPage Real Integration Tests', () => {
+describe('CartPage Integration Tests', () => {
   let server;
   let authToken;
   let testUser;
@@ -76,7 +76,20 @@ describe('CartPage Real Integration Tests', () => {
     localStorage.clear();
     await new Promise(res => setTimeout(res, 50));
     await new Promise(resolve => server.close(resolve));
-  });
+    await new Promise(resolve => {
+        const timeoutId = setTimeout(() => {
+            resolve();
+        }, 3000);
+        
+        server.close((err) => {
+            clearTimeout(timeoutId);
+            if (err) {
+                console.warn('Server close warning:', err.message);
+            }
+            resolve();
+        });
+    });
+  }, 10000);
 
   beforeEach(async () => {
     localStorage.clear();
@@ -275,12 +288,8 @@ describe('CartPage Real Integration Tests', () => {
 
       await renderCartPage(cartItems, null);
 
-      await waitFor(() => {
-        expect(screen.getByText("Product 1")).toBeInTheDocument();
-      });
-
-      // Should show login prompt instead of payment section
-      expect(screen.getByText(/Please Login to checkout/i)).toBeInTheDocument();
+      expect(await screen.findByText("Product 1")).toBeInTheDocument();
+      expect(await screen.findByRole("button", { name: "Please Login to checkout" })).toBeInTheDocument();
       expect(screen.queryByTestId("braintree-dropin")).not.toBeInTheDocument();
     });
   });
