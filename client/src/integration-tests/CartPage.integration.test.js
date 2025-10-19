@@ -96,7 +96,7 @@ describe('CartPage Real Integration Tests', () => {
       phone: '87654321',
       address: '123 Test Street',
       answer: 'red',
-      role: 0,
+      role: 1,
     });
 
     authToken = JWT.sign(
