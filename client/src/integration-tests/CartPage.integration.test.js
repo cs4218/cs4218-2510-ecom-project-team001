@@ -75,7 +75,6 @@ describe('CartPage Integration Tests', () => {
   afterEach(async () => {
     localStorage.clear();
     await new Promise(res => setTimeout(res, 50));
-    await new Promise(resolve => server.close(resolve));
     await new Promise(resolve => {
         const timeoutId = setTimeout(() => {
             resolve();
