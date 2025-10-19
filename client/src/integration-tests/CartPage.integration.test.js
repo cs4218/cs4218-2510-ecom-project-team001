@@ -1,21 +1,35 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom";
-import axios from "axios";
-import toast from "react-hot-toast";
+import { MemoryRouter } from "react-router-dom";
+import request from 'supertest';
+import axios from 'axios';
+import JWT from 'jsonwebtoken';
 import CartPage from "../pages/CartPage";
-import { mock } from "node:test";
+import { AuthProvider } from "../context/auth";
+import { CartProvider } from "../context/cart";
+import app from '../../../server.js';
+import userModel from '../../../models/userModel';
+import categoryModel from '../../../models/categoryModel';
+import productModel from '../../../models/productModel';
+import { connectToTestDb, resetTestDb, disconnectFromTestDb } from '../../../tests/utils/db';
 
-jest.mock("axios");
-jest.mock("react-hot-toast", () => ({
-  success: jest.fn(),
-  error: jest.fn(),
-}));
+/**
+ * =========== Integration Test for CartPage ===========
+ * This integration test covers:
+ * 1. Auth Context integration
+ * 2. Cart Context integration
+ * 3. Braintree token endpoint integration
+ * 4. Braintree payment endpoint integration
+ * 5. product data from database
+ * 6. Complete payment flow
+ * 
+ * Tests and test data have been created in part with the help of AI
+ */
+jest.setTimeout(15000);
 jest.mock("../styles/CartStyles.css", () => ({}));
 jest.mock("../components/Layout", () => ({ children }) => (
   <div data-testid="layout">{children}</div>
 ));
-
 jest.mock("braintree-web-drop-in-react", () => {
   const React = require("react");
   const requestPaymentMethodMock = jest
@@ -28,198 +42,411 @@ jest.mock("braintree-web-drop-in-react", () => {
       if (calledRef.current) return;
       calledRef.current = true;
       onInstance({ requestPaymentMethod: requestPaymentMethodMock });
-    }, []);
-    return <div data-testid="braintree-dropin">DropIn</div>;
+    }, [onInstance]);
+    return <div data-testid="braintree-dropin">DropIn Component</div>;
   };
 
   return { __esModule: true, default: DropIn, requestPaymentMethodMock };
 });
 
-let mockCartValue = [];
-const mockSetCart = jest.fn((next) => {
-  mockCartValue = typeof next === "function" ? next(mockCartValue) : next;
-});
-let mockAuthValue = {};
-const mockSetAuth = jest.fn();
-
 const mockNavigate = jest.fn();
-
-jest.mock("../context/auth", () => ({
-  useAuth: () => [mockAuthValue, mockSetAuth],
-}));
-jest.mock("../context/cart", () => ({
-  useCart: () => [mockCartValue, mockSetCart],
-}));
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: () => mockNavigate,
 }));
 
-// Render cart page
-const { act: domAct } = require("react-dom/test-utils");
-const act = React.act || domAct;
+describe('CartPage Integration Tests', () => {
+  let server;
+  let authToken;
+  let testUser;
+  let testCategory;
+  let product1;
+  let product2;
+  const tinyBuffer = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 
-const renderCartPage = async (cart = [], user = null) => {
-  jest.clearAllMocks();
-
-  // update mock state
-  mockCartValue = cart;
-  mockAuthValue = user ? { token: "test-token", user } : { token: null, user: null };
-
-  // localStorage
-  Storage.prototype.setItem = jest.fn();
-  Storage.prototype.getItem = jest.fn(() => JSON.stringify(cart));
-  Storage.prototype.removeItem = jest.fn();
-
-  // token call resolves
-  axios.get.mockResolvedValue({ data: { clientToken: "test-client-token" } });
-
-  let utils;
-  await act(async () => {
-    utils = render(<CartPage />);
+  beforeAll(async () => {
+    await connectToTestDb('cartpage-integration-test');
   });
 
-  // flush the getToken effect (prevents act/env warnings & open handles)
-  await waitFor(() =>
-    expect(axios.get).toHaveBeenCalledWith("/api/v1/product/braintree/token")
-  );
+  afterAll(async () => {
+    await disconnectFromTestDb();
+  });
 
-  return utils;
-};
+  afterEach(async () => {
+    localStorage.clear();
+    await new Promise(res => setTimeout(res, 50));
+    await new Promise(resolve => {
+        const timeoutId = setTimeout(() => {
+            resolve();
+        }, 3000);
+        
+        server.close((err) => {
+            clearTimeout(timeoutId);
+            if (err) {
+                console.warn('Server close warning:', err.message);
+            }
+            resolve();
+        });
+    });
+  }, 10000);
 
-describe("CartPage", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await resetTestDb();
+    
+    const PORT = 8089;
+    server = app.listen(PORT);
+    axios.defaults.baseURL = `http://localhost:${PORT}`;
+    
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    testUser = await userModel.create({
+      name: 'Test User',
+      email: 'testuser@test.com',
+      password: 'password123',
+      phone: '87654321',
+      address: '123 Test Street',
+      answer: 'red',
+      role: 1,
+    });
+
+    authToken = JWT.sign(
+      { _id: testUser._id },
+      process.env.JWT_SECRET || 'test-secret'
+    );
+
+    testCategory = await categoryModel.create({
+      name: 'Electronics',
+      slug: 'electronics',
+    });
+
+    // Create test products through /create-product endpoint
+    await request(app)
+      .post('/api/v1/product/create-product')
+      .set('authorization', authToken)
+      .field('name', 'Product 1')
+      .field('description', 'Description 1')
+      .field('price', '100')
+      .field('category', testCategory._id.toString())
+      .field('quantity', '2')
+      .field('shipping', '1')
+      .attach('photo', tinyBuffer, 'product1.png');
+
+    product1 = await productModel.findOne({ name: 'Product 1'});
+
+    await request(app)
+      .post('/api/v1/product/create-product')
+      .set('authorization', authToken)
+      .field('name', 'Product 2')
+      .field('description', 'Description 2')
+      .field('price', '200')
+      .field('category', testCategory._id.toString())
+      .field('quantity', '1')
+      .field('shipping', '1')
+      .attach('photo', tinyBuffer, 'product2.png');
+
+    product2 = await productModel.findOne({ name: 'Product 2' });
+
     jest.clearAllMocks();
   });
 
-  test("integration with auth context -- user logged in", async () => {
-    await renderCartPage([], null);
-
-    expect(screen.getByText("Your Cart Is Empty")).toBeInTheDocument();
-    expect(screen.getByText("Hello Guest")).toBeInTheDocument();
-    expect(screen.getByText("Total: $0.00")).toBeInTheDocument();
-  });
-
-  test("integration with auth context - user logged in", async () => {
-    const mockUser = {
-      name: "Tester",
-      email: "tester@gmail.com",
-      address: "Tester Street",
-      phone: "12345678",
-    };
-
-    await renderCartPage([], mockUser);
-
-    expect(screen.getByText("Your Cart Is Empty")).toBeInTheDocument();
-    expect(screen.getByText("Hello Tester")).toBeInTheDocument();
-    expect(screen.getByText("Total: $0.00")).toBeInTheDocument();
-  });
-
-  test("integration with cart context", async () => {
-    const mockProducts = [
-      {
-        _id: "1",
-        name: "Product 1",
-        price: 100,
-        description: "Description 1 for product 1 that is kind of long and needs to be truncated. This description will be truncated to only the first 10 words.",
-        quantity: 2,
-      },
-      { _id: "2", name: "Product 2", price: 200, description: "Description 2", quantity: 1 },
-    ];
-    const mockUser = {
-      name: "Tester",
-      email: "tester@gmail.com",
-      address: "Tester Street",
-      phone: "12345678",
-    };
-
-    await renderCartPage(mockProducts, mockUser);
-
-    for (const p of mockProducts) {
-      expect(screen.getByText(p.name)).toBeInTheDocument();
-      expect(screen.getByText(p.description.split(" ").slice(0, 10).join(" "))).toBeInTheDocument();
-      expect(screen.getByText(`Price: $${p.price}`)).toBeInTheDocument();
-      expect(screen.getByText(`Quantity: ${p.quantity}`)).toBeInTheDocument();
-      expect(screen.getByAltText(p.name)).toBeInTheDocument();
+  const renderCartPage = async (cartItems = [], authenticatedUser = null) => {
+    // Setup localStorage with cart
+    if (cartItems.length > 0) {
+      localStorage.setItem('cart', JSON.stringify(cartItems));
     }
-    expect(screen.getAllByRole("button", { name: "Remove" })).toHaveLength(mockProducts.length);
+
+    // Setup auth in localStorage if user is authenticated
+    if (authenticatedUser) {
+      localStorage.setItem('auth', JSON.stringify({
+        user: authenticatedUser,
+        token: authToken
+      }));
+    }
+
+    const { act: domAct } = require("react-dom/test-utils");
+    const act = React.act || domAct;
+
+    let utils;
+    await act(async () => {
+      utils = render(
+        <MemoryRouter>
+          <AuthProvider>
+            <CartProvider>
+              <CartPage />
+            </CartProvider>
+          </AuthProvider>
+        </MemoryRouter>
+      );
+    });
+
+    return utils;
+  };
+
+  describe('Auth Context Integration', () => {
+    test("should display guest message when user is not logged in", async () => {
+      await renderCartPage([], null);
+
+      expect(await screen.findByText("Hello Guest")).toBeInTheDocument();
+      expect(await screen.findByText("Your Cart Is Empty")).toBeInTheDocument();
+      expect(await screen.findByText("Total: $0.00")).toBeInTheDocument();
+    });
+
+    test("should display user details when user is logged in", async () => {
+      await renderCartPage([], testUser);
+      
+      expect(await screen.findByText(`Hello ${testUser.name}`)).toBeInTheDocument();
+      expect(await screen.findByText(testUser.address)).toBeInTheDocument();
+      expect(await screen.findByText("Your Cart Is Empty")).toBeInTheDocument();
+      expect(await screen.findByText("Total: $0.00")).toBeInTheDocument();
+    });
   });
 
-  test("integration with localStorage set item", async () => {
-    const mockProducts = [{ _id: "1", name: "Product 1", price: 100, description: "Desc 1" }];
-    await renderCartPage(mockProducts, { name: "X", address: "Y" });
+  describe('Cart Context and Product Integration', () => {
+    test("should display products from cart from localStorage", async () => {
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+          quantity: product1.quantity,
+        },
+        {
+          _id: product2._id.toString(),
+          name: product2.name,
+          price: product2.price,
+          description: product2.description,
+          quantity: product2.quantity,
+        },
+      ];
 
-    fireEvent.click(screen.getByRole("button", { name: "Remove" }));
+      await renderCartPage(cartItems, testUser);
 
-    expect(mockSetCart).toHaveBeenCalledWith([]);
-    expect(localStorage.setItem).toHaveBeenCalledWith("cart", "[]");
+      expect(await screen.findByText("Product 1")).toBeInTheDocument();
+      expect(await screen.findByText("Product 2")).toBeInTheDocument();
+      expect(await screen.findByText("Price: $100")).toBeInTheDocument();
+      expect(await screen.findByText("Price: $200")).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: 'Remove' })).toHaveLength(2);
+    });
+
+    test("should remove product from cart and update localStorage", async () => {
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+        },
+      ];
+
+      await renderCartPage(cartItems, testUser);
+
+      expect(await screen.findByText("Product 1")).toBeInTheDocument();
+
+      const removeButton = screen.getByRole("button", { name: "Remove" });
+      fireEvent.click(removeButton);
+
+      expect(await screen.findByText("Your Cart Is Empty")).toBeInTheDocument();
+
+      // Verify localStorage was updated
+      const updatedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+      expect(updatedCart).toHaveLength(0);
+    });
   });
 
-  test("integration with braintree/token route", async () => {
-    const authUser = { name: "A", address: "B" };
-    await renderCartPage([{ _id: "1", name: "Product", price: 10, description: "Test" }], authUser);
+  describe('Braintree Token Integration', () => {
+    test("should fetch braintree token from /braintree/token endpoint", async () => {
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+        },
+      ];
 
-    await waitFor(() =>
-      expect(axios.get).toHaveBeenCalledWith("/api/v1/product/braintree/token")
-    );
+      await renderCartPage(cartItems, testUser);
+
+      // Braintree dropin should appear after token is fetched
+      await waitFor(() => {
+        expect(screen.getByTestId("braintree-dropin")).toBeInTheDocument();
+      }, { timeout: 5000 });
+    });
+
+    test("should not show payment section for guest users", async () => {
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+        },
+      ];
+
+      await renderCartPage(cartItems, null);
+
+      expect(await screen.findByText("Product 1")).toBeInTheDocument();
+      expect(await screen.findByRole("button", { name: "Please Login to checkout" })).toBeInTheDocument();
+      expect(screen.queryByTestId("braintree-dropin")).not.toBeInTheDocument();
+    });
   });
 
-  test("integration with braintree/payment route", async () => {
-    const authUser = { name: "Foo", address: "123 Main St" };
-    const cartItems = [{ _id: "1", name: "Product", price: 10, description: "Test" }];
+  describe('Braintree Payment Integration', () => {
+    test("should process payment through braintree/payment endpoint", async () => {
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+        },
+      ];
 
-    axios.post.mockResolvedValue({ data: { success: true } });
+      await renderCartPage(cartItems, testUser);
 
-    await renderCartPage(cartItems, authUser);
+      await waitFor(() => {
+        expect(screen.getByTestId("braintree-dropin")).toBeInTheDocument();
+      }, { timeout: 5000 });
 
-    await screen.findByTestId("braintree-dropin");
-    const payBtn = screen.getByRole("button", { name: "Make Payment" });
-    expect(payBtn).toBeEnabled();
+      const paymentButton = screen.getByRole("button", { name: "Make Payment" });
+      expect(paymentButton).toBeEnabled();
 
-    fireEvent.click(payBtn);
+      fireEvent.click(paymentButton);
 
-    await waitFor(() =>
-      expect(axios.post).toHaveBeenCalledWith("/api/v1/product/braintree/payment", {
-        nonce: "test-nonce",
-        cart: cartItems,
-      })
-    );
+      await waitFor(() => {
+        // Cart should be cleared after successful payment
+        const cartData = localStorage.getItem('cart');
+        expect(cartData).toBe(null);
+      }, { timeout: 5000 });
+    });
+
+    test("should clear cart from localStorage after successful payment", async () => {
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+        },
+        {
+          _id: product2._id.toString(),
+          name: product2.name,
+          price: product2.price,
+          description: product2.description,
+        },
+      ];
+
+      await renderCartPage(cartItems, testUser);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("braintree-dropin")).toBeInTheDocument();
+      }, { timeout: 5000 });
+
+      let cartData = JSON.parse(localStorage.getItem('cart') || '[]');
+      expect(cartData).toHaveLength(2);
+
+      const paymentButton = screen.getByRole("button", { name: "Make Payment" });
+      fireEvent.click(paymentButton);
+
+      await waitFor(() => {
+        const updatedCart = localStorage.getItem('cart');
+        expect(updatedCart).toBe(null);
+      }, { timeout: 5000 });
+    });
+
+    test("should navigate to dashboard after successful payment", async () => {
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+        },
+      ];
+
+      await renderCartPage(cartItems, testUser);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("braintree-dropin")).toBeInTheDocument();
+      }, { timeout: 5000 });
+
+      const paymentButton = screen.getByRole("button", { name: "Make Payment" });
+      fireEvent.click(paymentButton);
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
+      }, { timeout: 5000 });
+    });
+
+    test("should handle payment failure gracefully", async () => {
+      const { requestPaymentMethodMock } = require("braintree-web-drop-in-react");
+      requestPaymentMethodMock.mockRejectedValueOnce(new Error("Payment method failed"));
+
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+        },
+      ];
+
+      await renderCartPage(cartItems, testUser);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("braintree-dropin")).toBeInTheDocument();
+      }, { timeout: 5000 });
+
+      const paymentButton = screen.getByRole("button", { name: "Make Payment" });
+      fireEvent.click(paymentButton);
+
+      // Cart should NOT be cleared on failure
+      await waitFor(() => {
+        const cartData = JSON.parse(localStorage.getItem('cart') || '[]');
+        expect(cartData.length).toBeGreaterThan(0);
+      });
+
+      expect(mockNavigate).not.toHaveBeenCalled();
+      requestPaymentMethodMock.mockResolvedValue({ nonce: "test-nonce-123" });
+    });
   });
 
-  test("integration with localStorage removeItem", async () => {
-    const authUser = { name: "Foo", address: "123 Main St" };
-    const cartItems = [{ _id: "1", name: "Product", price: 10, description: "Test" }];
+  describe('End-to-End Cart Flow', () => {
+    test("should complete full flow: add to cart, view cart, make payment", async () => {
+      const cartItems = [
+        {
+          _id: product1._id.toString(),
+          name: product1.name,
+          price: product1.price,
+          description: product1.description,
+        },
+        {
+          _id: product2._id.toString(),
+          name: product2.name,
+          price: product2.price,
+          description: product2.description,
+        },
+      ];
 
-    axios.post.mockResolvedValue({ data: { success: true } });
+      await renderCartPage(cartItems, testUser);
 
-    await renderCartPage(cartItems, authUser);
+      expect(await screen.findByText("Product 1")).toBeInTheDocument();
+      expect(await screen.findByText("Product 2")).toBeInTheDocument();
+      expect(await screen.findByText("Total: $300.00")).toBeInTheDocument();
 
-    await screen.findByTestId("braintree-dropin");
-    const payBtn = screen.getByRole("button", { name: "Make Payment" });
-    expect(payBtn).toBeEnabled();
+      await waitFor(() => {
+        expect(screen.getByTestId("braintree-dropin")).toBeInTheDocument();
+      }, { timeout: 5000 });
 
-    fireEvent.click(payBtn);
-    await waitFor(() => axios.post);
+      const paymentButton = screen.getByRole("button", { name: "Make Payment" });
+      fireEvent.click(paymentButton);
 
-    expect(localStorage.removeItem).toHaveBeenCalledWith("cart");
-  });
-
-  test("integration with localStorage removeItem - payment failure", async () => {
-    const authUser = { name: "Foo", address: "123 Main St" };
-    axios.post.mockRejectedValue(new Error("Payment failed"));
-
-    const logSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-
-    await renderCartPage([{ _id: "1", name: "P", price: 10, description: "T" }], authUser);
-
-    await screen.findByTestId("braintree-dropin");
-    fireEvent.click(screen.getByRole("button", { name: "Make Payment" }));
-
-    await waitFor(() => expect(logSpy).toHaveBeenCalled());
-
-    // No clearing on failure
-    expect(localStorage.removeItem).not.toHaveBeenCalledWith("cart");
-
-    logSpy.mockRestore();
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
+      }, { timeout: 5000 });
+      expect(localStorage.getItem('cart')).toBe(null);
+    });
   });
 });
