@@ -3,7 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react';
 import axios from 'axios';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import '@testing-library/jest-dom/extend-expect';
-import  toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import Login from '../../../pages/Auth/Login';
 import ForgotPassword from '../../../pages/Auth/ForgotPassword';
 import HomePage from '../../../pages/HomePage';
