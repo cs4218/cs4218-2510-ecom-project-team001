@@ -1,6 +1,6 @@
 # CS4218 Project - Virtual Vault
 
-[CI link](https://github.com/cs4218/cs4218-2510-ecom-project-team001/actions/runs/17570926400/job/49906843862?pr=4)
+[CI link](https://github.com/cs4218/cs4218-2510-ecom-project-team001/actions/runs/18659635667/job/53196898874)
 
 Tests have been written in part with the help of AI
 
