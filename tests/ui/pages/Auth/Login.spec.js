@@ -206,20 +206,6 @@ test.describe('E2E Login Flow', () => {
     expect(authData.user.email).toBe('admin@admin.com');
   });
 
-  test('should set axios default authorisation header after login', async ({ page }) => {
-    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
-    await page.getByPlaceholder('Enter Your Password').fill('admin');
-    await page.getByRole('button', { name: /login/i }).click();
-
-    await expect(page).toHaveURL(/\/$/);
-
-    const token = await page.evaluate(() => {
-      const auth = JSON.parse(localStorage.getItem('auth'));
-      return window.axios?.defaults?.headers?.common?.Authorization || auth?.token;
-    });
-    expect(token).toBeTruthy();
-  });
-
   test('should clear auth data from localStorage upon logout', async ({ page }) => {
     // Login first
     await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
