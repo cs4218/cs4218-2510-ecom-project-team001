@@ -183,3 +183,13 @@ test.describe('Login and Logout Flow', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 });
+
+test.describe('E2E Login Flow', () => {
+  test('should trim whitespace from email input before submission', async ({ page }) => {
+    await page.getByPlaceholder('Enter Your Email').fill('   cs4218@test.com   ');
+    await page.getByPlaceholder('Enter Your Password').fill('cs4218@test.com');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+  });
+});

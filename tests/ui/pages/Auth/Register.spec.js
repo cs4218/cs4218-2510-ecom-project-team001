@@ -190,3 +190,39 @@ test.describe('E2E Registration, Login, and Forgot Password Flow', () => {
     await expect(page).toHaveURL(/\/$/);
   });
 });
+
+test.describe('E2E Registration Flow', () => {
+  test('should trim input values before submission', async ({ page }) => {
+    let requestData = null;
+    await page.route('**/api/v1/auth/register', async (route) => {
+        const request = route.request();
+        requestData = await request.postDataJSON();
+        await route.fulfill({
+            status: 201,
+            contentType: 'application/json',
+            body: JSON.stringify({ success: true, message: 'Register Successfully, please login' }),
+        });
+    });
+
+    const uniqueEmail = `user${Date.now()}@example.com`;
+    await page.getByPlaceholder('Enter Your Name').fill('   Trim Test User   ');
+    await page.getByPlaceholder('Enter Your Email').fill(`   ${uniqueEmail}   `);
+    await page.getByPlaceholder('Enter Your Password').fill('password123');
+    await page.getByPlaceholder('Enter Your Phone').fill('   1234567890   ');
+    await page.getByPlaceholder('Enter Your Address').fill('   123 Street   ');
+    await page.getByPlaceholder('Enter Your DOB').fill('2000-01-01');
+    await page.getByPlaceholder('What is Your Favorite sports').fill('   Football   ');
+    await page.getByRole('button', { name: /register/i }).click();
+
+    await expect(page.getByText('Register Successfully, please login')).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+
+    expect(requestData).not.toBeNull();
+    expect(requestData.name).toBe('Trim Test User');
+    expect(requestData.email).toBe(uniqueEmail);
+    expect(requestData.password).toBe('password123');
+    expect(requestData.phone).toBe('1234567890');
+    expect(requestData.address).toBe('123 Street');
+    expect(requestData.answer).toBe('Football');
+  });
+});
