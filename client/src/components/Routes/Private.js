@@ -26,5 +26,5 @@ export default function PrivateRoute() {
   }, [auth?.token]);
 
   // Redirect to login if the user is trying to access a private route without being logged in
-  return ok ? <Outlet /> : <Spinner path="/login" />;
+  return ok ? <Outlet /> : <Spinner path="login" />;
 }
