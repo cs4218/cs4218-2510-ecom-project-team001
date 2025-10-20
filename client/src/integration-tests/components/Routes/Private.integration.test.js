@@ -85,7 +85,7 @@ describe('PrivateRoute - Integration', () => {
     expect(screen.getByTestId('spinner')).toBeInTheDocument();
     expect(screen.getByTestId('spinner')).toHaveAttribute(
       'data-path',
-      '/login'
+      'login'
     );
   });
 
