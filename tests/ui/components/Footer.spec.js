@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Footer Component E2E Tests', () => {
-  test('should display buttons with navigation links', async ({ page }) => {
+  test('users can view and navigate to the links in the footer.', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'All Rights Reserved ©' })).toBeVisible();
 

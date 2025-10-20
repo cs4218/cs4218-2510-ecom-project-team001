@@ -10,7 +10,7 @@ import { CartProvider } from '../context/cart';
 import { connectToTestDb, resetTestDb, disconnectFromTestDb } from '../../../tests/utils/db';
 
 /* 
-  This E2E UI test tests:
+  This integration test tests:
   1. Category Products API Integration between CategoryProduct and productCategoryController
   2. Error handling with 404 page
 

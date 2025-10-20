@@ -17,7 +17,7 @@ test.describe('ProductDetails Page', () => {
     await page.evaluate(() => window.localStorage.clear());
   });
 
-  test('should display product details and should add item to the cart', async ({ page }) => {
+  test('user can browse product details and add to cart, seeing cart count update', async ({ page }) => {
     
     // Wait for product details to load
     await expect(page.getByRole('heading', { name: 'Product Details' })).toBeVisible();
@@ -54,7 +54,7 @@ test.describe('ProductDetails Page', () => {
     await expect(page.getByRole('listitem').filter({ hasText: 'Cart1' })).toBeVisible();
   });
 
-  test('should display similar products', async ({ page }) => {
+  test('user can discover similar products with images, prices, and descriptions', async ({ page }) => {
 
     // Wait for similar products section
     await expect(page.getByRole('heading', { name: 'Similar Products ➡️' })).toBeVisible();
@@ -81,7 +81,7 @@ test.describe('ProductDetails Page', () => {
 
   });
 
-  test('should navigate to similar product details', async ({ page }) => {
+  test('user can navigate to related product through "More Details" button', async ({ page }) => {
     // Wait for similar products
     await expect(page.getByRole('heading', { name: 'Similar Products ➡️' })).toBeVisible();
     
@@ -94,7 +94,7 @@ test.describe('ProductDetails Page', () => {
     await page.waitForURL('/product/textbook');
   });
 
-  test('should handle 404 for non-existent product', async ({ page }) => {
+  test('user can access non-existent product and get redirected to Page Not Found page', async ({ page }) => {
     await page.goto(`/product/non-existent-product-slug`);
 
     await page.waitForURL(/\/404/, { timeout: 10000 });
@@ -104,7 +104,7 @@ test.describe('ProductDetails Page', () => {
     await expect(page.getByRole('heading', { name: '404' })).toBeVisible();
   });
 
-  test('should add multiple items to cart', async ({ page }) => {
+  test('user can add multiple items to cart', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'ADD TO CART' })).toBeVisible();
     // Add to cart multiple times
     const addToCartBtn = page.getByRole('button', { name: 'ADD TO CART' });
@@ -126,7 +126,7 @@ test.describe('ProductDetails Page', () => {
   });
 
 // Empty similar products
-  test('should handle EMPTY similar products section', async ({ page }) => {
+  test('user can view product with no similar items and see appropriate message', async ({ page }) => {
     await page.goto("/product/nus-tshirt");
 
     // Wait for product
