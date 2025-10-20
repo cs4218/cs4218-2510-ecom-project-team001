@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Page not Found 404 E2E Tests', () => {
-  test('should display 404 content and button to navigate back to home', async ({ page }) => {
+  test('users should view 404 content and can navigate back to home when accessing not existent page', async ({ page }) => {
     await page.goto('/not-existent-page');
 
     await expect(page.getByRole('heading', { name: '404' })).toBeVisible();

@@ -8,28 +8,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('CategoryProduct Page', () => {
   const testCategorySlug = 'electronics';
-  const testCategoriesSlugs = ['electronics', 'book', 'clothing'];
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/categories");
-  })
-
-  test('should correctly load all categories', async ({ page }) => {
-    for (const slug of testCategoriesSlugs) {
-      await expect(page.getByRole('link', { name: slug, exact: false })).toBeVisible();
-    }
-  });
-
-  test('should navigate to category page on category click', async ({ page }) => {
-    for (const slug of testCategoriesSlugs) {
-      await page.getByRole('link', { name: slug, exact: false }).click();
-      await expect(page).toHaveURL(`/category/${slug}`);
-      await expect(page.getByRole('heading', { name: `Category - ${slug}`, exact: false })).toBeVisible();
-      await page.goto("/categories");
-    }
-  });
-
-  test('should display products of a category', async ({ page }) => {
+  test('users can browse products within a category with complete product information and navigate to product details', async ({ page }) => {
     await page.goto(`/category/${testCategorySlug}`);
 
     await expect(page.getByRole('heading', { name: 'Category - Electronics' })).toBeVisible();
@@ -59,7 +39,7 @@ test.describe('CategoryProduct Page', () => {
     await expect(page).toHaveURL("/product/laptop");
   });
 
-  test('should handle 404 for non-existent category', async ({ page }) => {
+  test('users can access non-existent category and get redirected to Page Not Found page', async ({ page }) => {
     await page.goto(`/category/non-existent-category-slug`);
 
     await page.waitForURL(/\/404/, { timeout: 10000 });

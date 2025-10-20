@@ -26,7 +26,7 @@ testUser.describe('Header Component E2E Tests', () => {
     await page.goto('/');
   });
 
-  testUser('user logged in - should display all navigation elements and search', async ({ page }) => {
+  testUser('authenticated regular users can navigate through all header elements (home, cart, search, dashboard access, logout)', async ({ page }) => {
     // Brand
     const brand = page.getByRole('navigation');
     await expect(brand).toBeVisible();
@@ -69,7 +69,7 @@ testUser.describe('Header Component E2E Tests', () => {
     await expect(page).toHaveURL('/login'); 
   });
 
-  testAdmin('admin logged in - should display all navigation elements and search', async ({ page }) => {
+  testAdmin('authenticated admin users can navigate through all header elements with admin dashboard access', async ({ page }) => {
     // Brand
     const brand = page.getByRole('navigation');
     await expect(brand).toBeVisible();
@@ -112,7 +112,7 @@ testUser.describe('Header Component E2E Tests', () => {
     await expect(page).toHaveURL('/login'); 
   });
 
-  testUser('should handle unauthenticated user flow', async ({ page }) => {
+  testUser('unauthenticated users can view and navigate registration and login links', async ({ page }) => {
     await page.evaluate(() => localStorage.removeItem('auth'));
     await page.reload();
     
@@ -132,7 +132,7 @@ testUser.describe('Header Component E2E Tests', () => {
     await expect(page).toHaveURL('/login');
   });
 
-  testUser('should handle complete logout flow', async ({ page }) => {
+  testUser('users can complete logout flow clearing auth and cart data from localStorage with success notification', async ({ page }) => {
     await page.evaluate(() => {
       localStorage.setItem('cart', JSON.stringify([
         { id: 1, name: 'Product 1' },
@@ -163,7 +163,7 @@ testUser.describe('Header Component E2E Tests', () => {
     await expect(page).toHaveURL('/login');
   });
 
-  testUser('should display and update cart badge', async ({ page }) => {
+  testUser('users can view and verify cart badge updates reflecting item count changes', async ({ page }) => {
     // Empty cart shows zero
     await page.evaluate(() => localStorage.setItem('cart', JSON.stringify([])));
     await page.reload();
@@ -183,7 +183,7 @@ testUser.describe('Header Component E2E Tests', () => {
     await expect(badge).toHaveText('3');
   });
 
-  testUser('should display and navigate categories', async ({ page }) => {
+  testUser('users can browse categories dropdown and navigate to specific category pages or all categories page', async ({ page }) => {
     
     // Open categories dropdown
     const categoriesDropdown = page.getByRole('link', { name: 'Categories' });
