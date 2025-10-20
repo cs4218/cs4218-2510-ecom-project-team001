@@ -137,7 +137,7 @@ test.describe('E2E login and forgot password flow', () => {
     await page.getByRole('link', { name: 'Dashboard' }).click();
 
     await expect(page).toHaveURL(/\/dashboard\/admin/);
- });
+  });
 });
 
 test.describe('Login and Logout Flow', () => {
