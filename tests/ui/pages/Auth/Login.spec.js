@@ -56,12 +56,25 @@ test.describe('Login Page UI Tests', () => {
     await expect(page.getByText('Something went wrong')).toBeVisible();
   });
 
-  test('should login successfully and redirect to homepage', async ({ page }) => {
+  test('a regular user should login successfully and redirect to homepage', async ({ page }) => {
     await page.getByPlaceholder('Enter Your Email').fill('cs4218@test.com');
     await page.getByPlaceholder('Enter Your Password').fill('cs4218@test.com');
     await page.getByRole('button', { name: /login/i }).click();
 
     await expect(page).toHaveURL(/\/$/);
+  });
+
+  test('an admin user should login successfully and redirect to homepage and see admin dashboard', async ({ page }) => {
+    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
+    await page.getByPlaceholder('Enter Your Password').fill('admin');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.getByRole('button', { name: 'MyAdmin' }).click();
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+
+    await expect(page).toHaveURL(/\/dashboard\/admin/);
   });
 
   test('should navigate to forgot password page when clicking forgot password button', async ({ page }) => {
@@ -71,8 +84,105 @@ test.describe('Login Page UI Tests', () => {
   });
 });
 
+test.describe('E2E login and forgot password flow', () => {
+  test('a regular user should reset password and login with new password', async ({ page }) => {
+    // Navigate to forgot password page
+    await page.getByRole('button', { name: /forgot password/i }).click();
+
+    await expect(page).toHaveURL(/\/forgot-password/);
+
+    // Fill in forgot password form
+    await page.getByPlaceholder('Enter Your Email').fill('cs4218@test.com');
+    await page.getByPlaceholder('What is your favorite sport?').fill('password is cs4218@test.com');
+    await page.getByPlaceholder('Enter Your New Password').fill('cs4218@test.com');
+    await page.getByPlaceholder('Confirm Your New Password').fill('cs4218@test.com');
+    await page.getByRole('button', { name: /set new password/i }).click();
+
+
+    await expect(page.getByText('Password reset successful, please login')).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+
+    // Login with new password
+    await page.getByPlaceholder('Enter Your Email').fill('cs4218@test.com');
+    await page.getByPlaceholder('Enter Your Password').fill('cs4218@test.com');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  test('an admin user should reset password, login with new password and access admin dashboard', async ({ page }) => {
+    // Navigate to forgot password page
+    await page.getByRole('button', { name: /forgot password/i }).click();
+
+    await expect(page).toHaveURL(/\/forgot-password/);
+
+    // Fill in forgot password form
+    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
+    await page.getByPlaceholder('What is your favorite sport?').fill('Leetcoding');
+    await page.getByPlaceholder('Enter Your New Password').fill('admin');
+    await page.getByPlaceholder('Confirm Your New Password').fill('admin');
+    await page.getByRole('button', { name: /set new password/i }).click();
+
+    await expect(page.getByText('Password reset successful, please login')).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+
+    // Login with new password
+    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
+    await page.getByPlaceholder('Enter Your Password').fill('admin');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.getByRole('button', { name: 'MyAdmin' }).click();
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+
+    await expect(page).toHaveURL(/\/dashboard\/admin/);
+ });
+});
+
+test.describe('Login and Logout Flow', () => {
+  test('user should logout successfully and be redirected to login page', async ({ page }) => {
+    // Login first
+    await page.getByPlaceholder('Enter Your Email').fill('cs4218@test.com');
+    await page.getByPlaceholder('Enter Your Password').fill('cs4218@test.com');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    // Logout
+    await page.getByRole('button', { name: 'CS 4218 Test Account' }).click();
+    await page.getByRole('link', { name: 'Logout' }).click();
+
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('after logout, user should not access protected routes and be redirected to login page', async ({ page }) => {
+    // Try to access a protected route
+    await page.goto('http://localhost:3000/dashboard/user');
+
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('after logout, admin user should not access admin dashboard and be redirected to login page', async ({ page }) => {
+    // Login as admin first
+    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
+    await page.getByPlaceholder('Enter Your Password').fill('admin');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    // Logout
+    await page.getByRole('button', { name: 'MyAdmin' }).click();
+    await page.getByRole('link', { name: 'Logout' }).click();
+
+    await expect(page).toHaveURL(/\/login/);
+
+    // Try to access admin dashboard
+    await page.goto('http://localhost:3000/dashboard/admin');
+
+    await expect(page).toHaveURL(/\/login/);
+  });
+});
+
 // TODO: Add tests for E2E login flow with API integration,
 // including mocking backend responses for success and failure cases
-
-// TODO: Add tests for E2E login and forgot password flow to ensure full auth cycle works as expected
-// including verifying that after password reset, user can login with new password

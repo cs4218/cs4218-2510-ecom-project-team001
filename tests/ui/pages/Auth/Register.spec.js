@@ -114,11 +114,82 @@ test.describe('Register Page UI Tests', () => {
   });
 });
 
+test.describe('E2E Registration and Login Flow', () => {
+  test('should register a new user and login successfully', async ({ page }) => {
+    // Use a unique email for each test run to avoid errors where the email is already registered
+    const uniqueEmail = `user${Date.now()}@example.com`;
+
+    // Registration
+    await page.getByPlaceholder('Enter Your Name').fill('E2E Test User');
+    await page.getByPlaceholder('Enter Your Email').fill(uniqueEmail);
+    await page.getByPlaceholder('Enter Your Password').fill('password123');
+    await page.getByPlaceholder('Enter Your Phone').fill('1234567890');
+    await page.getByPlaceholder('Enter Your Address').fill('123 Street');
+    await page.getByPlaceholder('Enter Your DOB').fill('2000-01-01');
+    await page.getByPlaceholder('What is Your Favorite sports').fill('Football');
+    await page.getByRole('button', { name: /register/i }).click();
+
+    await expect(page.getByText('Register Successfully, please login')).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+
+    // Login
+    await page.getByPlaceholder('Enter Your Email').fill(uniqueEmail);
+    await page.getByPlaceholder('Enter Your Password').fill('password123');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
+
+test.describe('E2E Registration, Login, and Forgot Password Flow', () => {
+  test('should register, login, reset password, and login with new password successfully', async ({ page }) => {
+    // Use a unique email for each test run to avoid errors where the email is already registered
+    const uniqueEmail = `user${Date.now()}@example.com`;
+
+    // Registration
+    await page.getByPlaceholder('Enter Your Name').fill('Full Cycle Test User');
+    await page.getByPlaceholder('Enter Your Email').fill(uniqueEmail);
+    await page.getByPlaceholder('Enter Your Password').fill('password123');
+    await page.getByPlaceholder('Enter Your Phone').fill('1234567890');
+    await page.getByPlaceholder('Enter Your Address').fill('123 Street');
+    await page.getByPlaceholder('Enter Your DOB').fill('2000-01-01');
+    await page.getByPlaceholder('What is Your Favorite sports').fill('Football');
+    await page.getByRole('button', { name: /register/i }).click();
+
+    await expect(page.getByText('Register Successfully, please login')).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+
+    // Login
+    await page.getByPlaceholder('Enter Your Email').fill(uniqueEmail);
+    await page.getByPlaceholder('Enter Your Password').fill('password123');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    // Logout
+    await page.getByRole('button', { name: 'Full Cycle Test User' }).click();
+    await page.getByRole('link', { name: 'Logout' }).click();
+    await expect(page).toHaveURL(/\/login/);
+
+    // Forgot Password
+    await page.getByRole('button', { name: /forgot password/i }).click();
+    await page.getByPlaceholder('Enter Your Email').fill(uniqueEmail);
+    await page.getByPlaceholder('What is your favorite sport?').fill('Football');
+    await page.getByPlaceholder('Enter Your New Password').fill('newpassword123');
+    await page.getByPlaceholder('Confirm Your New Password').fill('newpassword123');
+    await page.getByRole('button', { name: /set new password/i }).click();
+
+    await expect(page.getByText('Password reset successful, please login')).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+
+    // Login with new password
+    await page.getByPlaceholder('Enter Your Email').fill(uniqueEmail);
+    await page.getByPlaceholder('Enter Your Password').fill('newpassword123');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
+
 // TODO: Add tests for E2E registration flow with API integration,
 // including mocking backend responses for success and failure cases
-
-// TODO: Add tests for E2E registration and login flow to ensure full auth cycle works as expected
-// including verifying that after registration, user can login successfully
-
-// TODO: Add tests for E2E registration, login, and forgot password flow to ensure complete auth lifecycle
-// including verifying that after password reset, user can login with new password

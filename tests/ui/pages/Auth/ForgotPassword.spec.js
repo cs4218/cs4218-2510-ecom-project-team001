@@ -88,6 +88,3 @@ test.describe('Forgot Password Page UI Tests', () => {
 
 // TODO: Add tests for E2E forgot password flow with API integration,
 // including mocking backend responses for success and failure cases
-
-// TODO: Add tests for E2E forgot password and login flow to ensure full auth cycle works as expected
-// including verifying that after password reset, user can login with new password
