@@ -85,3 +85,16 @@ test.describe('Forgot Password Page UI Tests', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 });
+
+test.describe('E2E Forgot Password Flow', () => {
+  test('should trim whitespace from email and answer inputs before submission', async ({ page }) => {
+    await page.getByPlaceholder('Enter Your Email').fill('   cs4218@test.com   ');
+    await page.getByPlaceholder('What is your favorite sport?').fill('   password is cs4218@test.com   ');
+    await page.getByPlaceholder('Enter Your New Password').fill('cs4218@test.com');
+    await page.getByPlaceholder('Confirm Your New Password').fill('cs4218@test.com');
+    await page.getByRole('button', { name: /set new password/i }).click();
+
+    await expect(page.getByText('Password reset successful, please login')).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+  });
+});
