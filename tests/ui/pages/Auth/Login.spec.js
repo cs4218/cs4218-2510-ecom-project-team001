@@ -192,4 +192,67 @@ test.describe('E2E Login Flow', () => {
 
     await expect(page).toHaveURL(/\/$/);
   });
+
+  test('should store auth data in localStorage upon successful login', async ({ page }) => {
+    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
+    await page.getByPlaceholder('Enter Your Password').fill('admin');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    const authData = await page.evaluate(() => JSON.parse(localStorage.getItem('auth')));
+    expect(authData).toBeDefined();
+    expect(authData.user).toBeDefined();
+    expect(authData.user.email).toBe('admin@admin.com');
+  });
+
+  test('should set axios default authorisation header after login', async ({ page }) => {
+    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
+    await page.getByPlaceholder('Enter Your Password').fill('admin');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    const token = await page.evaluate(() => {
+      const auth = JSON.parse(localStorage.getItem('auth'));
+      return window.axios?.defaults?.headers?.common?.Authorization || auth?.token;
+    });
+    expect(token).toBeTruthy();
+  });
+
+  test('should clear auth data from localStorage upon logout', async ({ page }) => {
+    // Login first
+    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
+    await page.getByPlaceholder('Enter Your Password').fill('admin');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    // Logout
+    await page.getByRole('button', { name: 'MyAdmin' }).click();
+    await page.getByRole('link', { name: 'Logout' }).click();
+
+    await expect(page).toHaveURL(/\/login/);
+
+    const authData = await page.evaluate(() => localStorage.getItem('auth'));
+    expect(authData).toBeNull();
+  });
+
+  test('should maintain auth state on page reload if user is logged in', async ({ page }) => {
+    // Login first
+    await page.getByPlaceholder('Enter Your Email').fill('admin@admin.com');
+    await page.getByPlaceholder('Enter Your Password').fill('admin');
+    await page.getByRole('button', { name: /login/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+
+    // Reload the page
+    await page.reload();
+
+    // Check if still logged in by accessing a protected route
+    await page.getByRole('button', { name: 'MyAdmin' }).click();
+    await page.getByRole('link', { name: 'Dashboard' }).click();
+
+    await expect(page).toHaveURL(/\/dashboard\/admin/);
+  });
 });
