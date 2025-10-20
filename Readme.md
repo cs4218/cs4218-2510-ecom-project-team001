@@ -6,6 +6,8 @@ Tests have been written in part with the help of AI
 
 ## Team Member Contributions
 
+### MS1
+
 | Features                | Client Related Files (/client/src/)                                                                                                                  | Server Related Files (./)                                                                                                                                                                                                                                                                                                                    | Student                |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | **Protected Routes**    | - context/auth.js                                                                                                                                    | - helpers/authHelper.js<br>- middlewares/authMiddleware.js                                                                                                                                                                                                                                                                                   | Pearlynn Toh Jieying   |
@@ -29,6 +31,17 @@ Tests have been written in part with the help of AI
 | **Cart**                | - context/cart.js<br>- pages/CartPage.js                                                                                                             |                                                                                                                                                                                                                                                                                                                                              | Wang Jingting          |
 | **Category**            | - hooks/useCategory.js<br>- pages/Categories.js                                                                                                      | - controllers/categoryController.js<br>1. categoryControlller<br>2. singleCategoryController<br>- models/categoryModel.js                                                                                                                                                                                                                    | Wang Jingting          |
 | **Payment**             |                                                                                                                                                      | - controllers/productController.js<br>1. braintreeTokenController<br>2. brainTreePaymentController                                                                                                                                                                                                                                           | Wang Jingting          |
+
+### MS 2
+
+**Wong Li Yuan**
+| Component | Integration Tests | UI/E2E Tests | Bug Fixes |
+|-----------|-------------------|--------------|-----------|
+| **ProductDetails** | • `productController.integration.test.js`: Backend API (`/get-product/:slug`, `/product-photo/:pid`, `/related-product/:pid/:cid`) with controllers & models<br>• `ProductDetails.integration.test.js`: Frontend-backend full pipeline<br>• `ProductDetails.integration.test.js`: Cart Context state management | • `ProductDetails.spec.js`: View product & add to cart, related products navigation, multiple additions, no similar items handling | Non-existent product → 404 redirect |
+| **CategoryProduct** | • `productController.integration.test.js`: Backend API (`/product-category/:slug`) with controllers & models<br>• `CategoryProduct.integration.test.js`: Frontend-backend category display & navigation | • `CategoryProduct.spec.js`: Browse by category, navigate to product details | Non-existent category → 404 redirect |
+| **Header** | • `useCategory.integration.test.js`: useCategory hook with controllers & database<br>• `Header.integration.test.js`: Frontend-backend categories dropdown<br>• `Header.integration.test.js`: Auth & Cart Contexts (conditional UI, logout, cart badge) | • `Header.spec.js`: Navigation (user/admin/guest), logout flow & localStorage clearing, cart badge updates, categories dropdown navigation | None |
+| **Footer** | None | • `Footer.spec.js`: Footer links navigation | None |
+| **Page Not Found** | None | • `Pagenotfound.spec.js`: 404 content & home navigation | None |
 
 ## 1. Project Introduction
 
