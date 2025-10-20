@@ -85,6 +85,3 @@ test.describe('Forgot Password Page UI Tests', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 });
-
-// TODO: Add tests for E2E forgot password flow with API integration,
-// including mocking backend responses for success and failure cases

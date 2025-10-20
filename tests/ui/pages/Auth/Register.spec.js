@@ -190,6 +190,3 @@ test.describe('E2E Registration, Login, and Forgot Password Flow', () => {
     await expect(page).toHaveURL(/\/$/);
   });
 });
-
-// TODO: Add tests for E2E registration flow with API integration,
-// including mocking backend responses for success and failure cases

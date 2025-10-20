@@ -183,6 +183,3 @@ test.describe('Login and Logout Flow', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 });
-
-// TODO: Add tests for E2E login flow with API integration,
-// including mocking backend responses for success and failure cases
