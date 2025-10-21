@@ -225,16 +225,16 @@ export const productFiltersController = async (req, res) => {
     ) {
       return res.status(400).send({
         success: false,
-        error: new Error("Invalid filter"),
-        message: "Invalid filter",
+        error: new Error("Invalid filter type"),
+        message: "Invalid filter type",
       });
     }
 
     if (radio[0] < 0 || radio[1] < 0 || radio[0] > radio[1]) {
       return res.status(400).send({
         success: false,
-        error: new Error("Invalid filter"),
-        message: "Invalid filter",
+        error: new Error("Invalid filter values"),
+        message: "Invalid filter values",
       });
     }
 

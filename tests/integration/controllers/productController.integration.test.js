@@ -13,6 +13,7 @@ import productModel from "../../../models/productModel.js";
 
 import app from "../../../server.js";
 import fs from "fs";
+import { jest } from "@jest/globals";
 
 jest.setTimeout(25000);
 
@@ -52,6 +53,199 @@ beforeEach(async () => {
     name: "Gadgets",
     slug: "gadgets",
   });
+});
+
+/**
+ * =================================================================================================
+ * Integration testing involving
+ * 1. controllers/productController.js (productFiltersController)
+ * 2. server.js (app)
+ * 3. /models/productModel.js
+ * 4. /routes/productRoutes.js
+ * =================================================================================================
+ */
+
+describe("productFiltersController integration", () => {
+  let cat1, cat2, cat3;
+  let productA, productA2, productB, productC;
+  beforeEach(async () => {
+    cat1 = await categoryModel.create({
+      name: "Category1",
+      slug: "category1",
+    });
+
+    cat2 = await categoryModel.create({
+      name: "Category2",
+      slug: "category2",
+    });
+
+    cat3 = await categoryModel.create({
+      name: "Category3",
+      slug: "category3",
+    });
+
+    // Cat 1, price within 40-60
+    await productModel.create([
+      {
+        name: "Product A",
+        slug: "product-a",
+        description: "Description A",
+        price: 50,
+        category: cat1._id,
+        quantity: 10,
+        shipping: true,
+      },
+      {
+        name: "Product A2",
+        slug: "product-a2",
+        description: "Description A2",
+        price: 10,
+        category: cat1._id,
+        quantity: 10,
+        shipping: true,
+      },
+      {
+        name: "Product B",
+        slug: "product-b",
+        description: "Description B",
+        price: 30,
+        category: cat2._id,
+        quantity: 10,
+        shipping: true,
+      },
+      {
+        name: "Product C",
+        slug: "product-c",
+        description: "Description C",
+        price: 15,
+        category: cat3._id,
+        quantity: 10,
+        shipping: true,
+      }
+    ]);
+
+    // Cat 1, price within 40-59.99
+    productA = await productModel.findOne({ name: "Product A" });
+    // Cat 1, price within 0-19.99
+    productA2 = await productModel.findOne({ name: "Product A2" });
+    // Cat 2, price within 20-39.99
+    productB = await productModel.findOne({ name: "Product B" });
+    // Cat 3, price within 0-19.99
+    productC = await productModel.findOne({ name: "Product C" });
+  });
+
+  test("POST /product-filters should return correct products on category filter", async () => {
+    const res = await request(app)
+      .post("/api/v1/product/product-filters")
+      .send({ checked: [cat1._id], radio: [] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.products)).toBe(true);
+    expect(res.body.products.length).toBe(2);
+    const names = res.body.products.map((p) => p.name);
+    expect(names).toEqual(
+      expect.arrayContaining(["Product A", "Product A2"])
+    );
+  });
+
+  test("POST /product-filters should return correct products on multiple category filter", async () => {
+    const res = await request(app)
+      .post("/api/v1/product/product-filters")
+      .send({ checked: [cat1._id, cat2._id], radio: [] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.products)).toBe(true);
+    expect(res.body.products.length).toBe(3);
+    const names = res.body.products.map((p) => p.name);
+    expect(names).toEqual(
+      expect.arrayContaining(["Product A", "Product A2","Product B"])
+    );
+  });
+
+  test("POST /product-filters should return correct products on price range filter", async () => {
+    const res = await request(app)
+      .post("/api/v1/product/product-filters")
+      .send({ checked: [], radio: [40, 59.99] });
+    
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.products)).toBe(true);
+    expect(res.body.products.length).toBe(1);
+    const names = res.body.products.map((p) => p.name);
+    expect(names).toEqual(
+      expect.arrayContaining(["Product A"])
+    );
+  });
+
+  test("POST /product-filters should return correct products on price range and category filter", async () => {
+    const res = await request(app)
+      .post("/api/v1/product/product-filters")
+      .send({ checked: [cat1._id], radio: [0, 19.99] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.products)).toBe(true);
+    expect(res.body.products.length).toBe(1);
+    console.log(res.body.products);
+    const names = res.body.products.map((p) => p.name);
+    expect(names).toEqual(
+      expect.arrayContaining(["Product A2"])
+    );
+  });
+
+  test("POST /product-filters should return correct products on price range and multiple category filter", async () => {
+    const res = await request(app)
+      .post("/api/v1/product/product-filters")
+      .send({ checked: [cat1._id, cat3._id], radio: [0, 19.99] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.products)).toBe(true);
+    expect(res.body.products.length).toBe(2);
+    console.log(res.body.products);
+    const names = res.body.products.map((p) => p.name);
+    expect(names).toEqual(
+      expect.arrayContaining(["Product A2", "Product C"])
+    );
+  });
+
+  test("POST /product-filters should return 400 on invalid filter type", async () => {
+    // Will return 400 because checked is not an array
+    const res = await request(app)
+      .post("/api/v1/product/product-filters")
+      .send({ checked: cat1._id, radio: [0, 19.99] });
+    
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("Invalid filter type");
+  });
+
+  test("POST /product-filters should return 400 on invalid filter values", async () => {
+    // Will return 400 because radio[0] > radio[1]
+    const res = await request(app)
+      .post("/api/v1/product/product-filters")
+      .send({ checked: [cat1._id], radio: [30, 19.99] });
+    
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("Invalid filter values");
+  });
+
+  test("POST /product-filters should return 500 on DB error", async () => {
+    const findSpy = jest.spyOn(productModel, "find").mockImplementationOnce(() => {
+      throw new Error("DB failure");
+    })
+    const res = await request(app)
+      .post("/api/v1/product/product-filters")
+      .send({ checked: [cat1._id], radio: [0, 19.99] });
+
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("Error while filtering products");
+  });
+
 });
 /**
  * =================================================================================================
