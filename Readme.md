@@ -34,6 +34,15 @@ Tests have been written in part with the help of AI
 
 ### MS 2
 
+**Pearlynn Toh Jieying**
+| Component | Integration Tests | UI/E2E Tests | Bug Fixes |
+|-----------|-------------------|--------------|-----------|
+| **Protected Routes** | `authMiddleware.integration.test.js` | None | None |
+| **Registration** | • `Registration.integration.test.js`<br>• `authControllerLoginRegisterForgotPassword.integration.test.js` | `Register.spec.js` | None |
+| **Login** | `Login.integration.test.js`<br>• `authControllerLoginRegisterForgotPassword.integration.test.js` | `Login.spec.js` | When I try to access `http://localhost:3000/dashboard/user` when I am logged out, I get redirected to `http://login/` instead of `http://localhost:3000/login` |
+| **ForgotPassword** | • `ForgotPassword.integration.test.js`<br>• `authControllerLoginRegisterForgotPassword.integration.test.js` | •`ForgotPassword.spec.js` | Add missing ForgotPassword page |
+| **Admin Dashboard** | `AdminDashboard.integration.js` | • `AdminMenu.spec.js`<br>• `AdminDashboard.spec.js` | None |
+
 **Wong Li Yuan**
 | Component | Integration Tests | UI/E2E Tests | Bug Fixes |
 |-----------|-------------------|--------------|-----------|
@@ -48,7 +57,7 @@ Tests have been written in part with the help of AI
 |-----------|-------------------|--------------|-----------|
 | **HomePage** | • `productController.integration.test.js` -- Integration between controller, category model, and product model: <br/> - productFiltersController (`/product-filters`) <br/> <br/> • `HomePage.integration.test.js` -- Integration between HomePage components and real endpoints | • `HomePage.spec.js`: <br/> View all products, filter products, reset filter, view product details, add product to cart | Fix filter error messages to distinguish between between types of errors |
 | **Categories** | • `categoryController.integration.test.js` -- Integration between controllers and category model: <br/> - categoryController (`/get-category`) <br/> - singleCategoryController (`/single-category/:slug`) | • `Categories.spec.js`: <br/> View all categories, navigate to category page | None |
-| **CartPage** | • `payment.integration.test.js` -- Integration between controllers and order model:<br/> - braintreeTokenController (`braintree/token`) <br/> - braintreePaymentController (`braintree\payment`) <br/> <br/> • `CartPage.integration.test.js` -- Integration between CartPage components and real endpoints | • `CartPage.spec.js`: View cart, remove items from cart, update address from cart, checkout process |  • Only get braintree token when user is logged in <br/> <br/> • Await creation of new order so payment has time to finalise and return successfully |
+| **CartPage** | • `payment.integration.test.js` -- Integration between controllers and order model:<br/> - braintreeTokenController (`braintree/token`) <br/> - braintreePaymentController (`braintree\payment`) <br/> <br/> • `CartPage.integration.test.js` -- Integration between CartPage components and real endpoints | • `CartPage.spec.js`: View cart, remove items from cart, update address from cart, checkout process | • Only get braintree token when user is logged in <br/> <br/> • Await creation of new order so payment has time to finalise and return successfully |
 
 ## 1. Project Introduction
 
