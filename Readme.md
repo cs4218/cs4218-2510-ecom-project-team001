@@ -43,6 +43,13 @@ Tests have been written in part with the help of AI
 | **Footer** | None | • `Footer.spec.js`: Footer links navigation | None |
 | **Page Not Found** | None | • `Pagenotfound.spec.js`: 404 content & home navigation | None |
 
+**Wang Jingting**
+| Component | Integration Tests | UI/E2E Tests | Bug Fixes |
+|-----------|-------------------|--------------|-----------|
+| **HomePage** | • `productController.integration.test.js` -- Integration between controller, category model, and product model: <br/> - productFiltersController (`/product-filters`) <br/> <br/> • `HomePage.integration.test.js` -- Integration between HomePage components and real endpoints | • `HomePage.spec.js`: <br/> View all products, filter products, reset filter, view product details, add product to cart | Fix filter error messages to distinguish between between types of errors |
+| **Categories** | • `categoryController.integration.test.js` -- Integration between controllers and category model: <br/> - categoryController (`/get-category`) <br/> - singleCategoryController (`/single-category/:slug`) | • `Categories.spec.js`: <br/> View all categories, navigate to category page | None |
+| **CartPage** | • `payment.integration.test.js` -- Integration between controllers and order model:<br/> - braintreeTokenController (`braintree/token`) <br/> - braintreePaymentController (`braintree\payment`) <br/> <br/> • `CartPage.integration.test.js` -- Integration between CartPage components and real endpoints | • `CartPage.spec.js`: View cart, remove items from cart, update address from cart, checkout process |  • Only get braintree token when user is logged in <br/> <br/> • Await creation of new order so payment has time to finalise and return successfully |
+
 ## 1. Project Introduction
 
 Virtual Vault is a full-stack MERN (MongoDB, Express.js, React.js, Node.js) e-commerce website, offering seamless connectivity and user-friendly features. The platform provides a robust framework for online shopping. The website is designed to adapt to evolving business needs and can be efficiently extended.
