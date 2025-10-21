@@ -57,7 +57,13 @@ test.describe("Update Product Page", () => {
 
   test("@admin-only page should render all fields pre-filled", async () => {
     // Arrange + Act
-    await page.goto(`/dashboard/admin/product/${testProduct.slug}`);
+    await page.goto("/dashboard/admin/products"); // goto Products page
+
+    await page.getByText(testProduct.name, { exact: true }).click(); // Click into the first product
+
+    await expect(page).toHaveURL(
+      `/dashboard/admin/product/${testProduct.slug}`
+    );
 
     await expect(
       page.getByRole("textbox", { name: "write a name" })
@@ -86,7 +92,14 @@ test.describe("Update Product Page", () => {
 
   test("@admin-only should allow me to update a product", async () => {
     // Arrange
-    await page.goto(`/dashboard/admin/product/${testProduct.slug}`);
+    await page.goto("/dashboard/admin/products"); // goto Products page
+
+    await page.getByText(testProduct.name, { exact: true }).click(); // Click into the first product
+
+    await expect(page).toHaveURL(
+      `/dashboard/admin/product/${testProduct.slug}`
+    );
+
     await expect(
       page.getByRole("textbox", { name: "write a name" })
     ).toHaveValue("Tablet");
@@ -131,7 +144,14 @@ test.describe("Update Product Page", () => {
 
   test("@admin-only should not allow me to update a product when product name field not filled in", async () => {
     // Arrange
-    await page.goto(`/dashboard/admin/product/${testProduct.slug}`);
+    await page.goto("/dashboard/admin/products"); // goto Products page
+
+    await page.getByText(testProduct.name, { exact: true }).click(); // Click into the first product
+
+    await expect(page).toHaveURL(
+      `/dashboard/admin/product/${testProduct.slug}`
+    );
+
     await expect(
       page.getByRole("textbox", { name: "write a name" })
     ).toHaveValue("Tablet");
@@ -151,7 +171,13 @@ test.describe("Update Product Page", () => {
 
   test("@admin-only should allow me to delete a product after confirmation with non-empty input", async () => {
     // Arrange
-    await page.goto(`/dashboard/admin/product/${testProduct.slug}`);
+    await page.goto("/dashboard/admin/products"); // goto Products page
+
+    await page.getByText(testProduct.name, { exact: true }).click(); // Click into the first product
+
+    await expect(page).toHaveURL(
+      `/dashboard/admin/product/${testProduct.slug}`
+    );
 
     await expect(
       page.getByRole("textbox", { name: "write a name" })
@@ -184,7 +210,13 @@ test.describe("Update Product Page", () => {
 
   test("@admin-only should not allow me to delete a product after confirmation with empty input", async () => {
     // Arrange
-    await page.goto(`/dashboard/admin/product/${testProduct.slug}`);
+    await page.goto("/dashboard/admin/products"); // goto Products page
+
+    await page.getByText(testProduct.name, { exact: true }).click(); // Click into the first product
+
+    await expect(page).toHaveURL(
+      `/dashboard/admin/product/${testProduct.slug}`
+    );
 
     await expect(
       page.getByRole("textbox", { name: "write a name" })
