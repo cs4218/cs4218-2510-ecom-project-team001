@@ -715,3 +715,59 @@ test('shows message when no products found on filtering', async () => {
   expect(screen.queryByRole("article", { name: "Product: Clothes B" })).not.toBeInTheDocument();
 
 })
+
+test("unchecking a category restores the full product list", async () => {
+  // Arrange
+  const categories = [
+    { _id: "c1", name: "Books" },
+    { _id: "c2", name: "Clothing" },
+  ];
+  const initial = [
+    { _id: "a1", name: "Book A", price: 5, description: "A", slug: "book" },
+    { _id: "a2", name: "Clothes B", price: 15, description: "B", slug: "clothes" },
+  ];
+  const filtered = [
+    { _id: "a1", name: "Book A", price: 5, description: "A", slug: "book" },
+  ];
+
+  axios.get.mockImplementation((url) => {
+    if (url === "/api/v1/category/get-category") {
+      return Promise.resolve({ data: { success: true, category: categories } });
+    }
+    if (url === "/api/v1/product/product-count") {
+      return Promise.resolve({ data: { total: 2 } });
+    }
+    if (url === "/api/v1/product/product-list/1") {
+      return Promise.resolve({ data: { products: initial } });
+    }
+    return Promise.resolve({ data: {} });
+  });
+
+  axios.post.mockImplementation((url, body) => {
+    if (url === "/api/v1/product/product-filters") {
+      if (Array.isArray(body?.checked) && body.checked.includes("c1")) {
+        return Promise.resolve({ data: { products: filtered } });
+      }
+    }
+    return Promise.resolve({ data: {} });
+  });
+
+  renderHome();
+
+  await screen.findByRole("article", { name: "Product: Book A" });
+  await screen.findByRole("article", { name: "Product: Clothes B" });
+
+  const booksCheckbox = screen.getByRole("checkbox", { name: "Books" });
+  fireEvent.click(booksCheckbox);
+
+  expect(await screen.findByRole("article", { name: "Product: Book A" })).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.queryByRole("article", { name: "Product: Clothes B" }))
+      .not.toBeInTheDocument();
+  });
+
+  fireEvent.click(booksCheckbox);
+
+  expect(await screen.findByRole("article", { name: "Product: Book A" })).toBeInTheDocument();
+  expect(await screen.findByRole("article", { name: "Product: Clothes B" })).toBeInTheDocument();
+});
