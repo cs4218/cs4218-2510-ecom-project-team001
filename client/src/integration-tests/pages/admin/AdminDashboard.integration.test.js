@@ -51,7 +51,7 @@ describe('AdminDashboard Page - Integration', () => {
   });
 
   it('renders admin dashboard with admin details', async () => {
-    const { getByText } = render(<TestAdminDashboardComponent />);
+    const { getByText, getByRole } = render(<TestAdminDashboardComponent />);
 
     await waitFor(() => {
       expect(getByRole('heading', { level: 4, name: 'Admin Panel' })).toBeInTheDocument();
