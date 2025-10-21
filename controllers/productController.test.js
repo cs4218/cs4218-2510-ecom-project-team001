@@ -415,7 +415,7 @@ describe("Product Controller Tests", () => {
       // Arrange
       req.body.checked = [];
       req.body.radio = [500, 100]; // Invalid: min > max
-      const error = new Error("Invalid filter");
+      const error = new Error("Invalid filter values");
 
       // Act
       await productFiltersController(req, res);
@@ -425,7 +425,7 @@ describe("Product Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Invalid filter",
+          message: "Invalid filter values",
           error,
         })
       );
@@ -435,7 +435,7 @@ describe("Product Controller Tests", () => {
       // Arrange
       req.body.checked = [];
       req.body.radio = [-100, 500];
-      const error = new Error("Invalid filter");
+      const error = new Error("Invalid filter values");
 
       // Act
       await productFiltersController(req, res);
@@ -445,7 +445,7 @@ describe("Product Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Invalid filter",
+          message: "Invalid filter values",
           error,
         })
       );
@@ -454,7 +454,7 @@ describe("Product Controller Tests", () => {
     test("should handle invalid price range but valid category", async () => {
       // Arrange
       req.body.radio = [-500, 100]; // Invalid: min > max
-      const error = new Error("Invalid filter");
+      const error = new Error("Invalid filter values");
 
       // Act
       await productFiltersController(req, res);
@@ -464,7 +464,7 @@ describe("Product Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Invalid filter",
+          message: "Invalid filter values",
           error,
         })
       );
@@ -473,7 +473,7 @@ describe("Product Controller Tests", () => {
     test("should handle valid price range but invalid category", async () => {
       // Arrange
       req.body.checked = "invalid category";
-      const error = new Error("Invalid filter");
+      const error = new Error("Invalid filter type");
 
       // Act
       await productFiltersController(req, res);
@@ -483,7 +483,7 @@ describe("Product Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Invalid filter",
+          message: "Invalid filter type",
           error,
         })
       );
@@ -493,7 +493,7 @@ describe("Product Controller Tests", () => {
       // Arrange
       req.body.checked = "invalid-category";
       req.body.radio = [1, 2, 3];
-      const error = new Error("Invalid filter");
+      const error = new Error("Invalid filter type");
       productModel.find = jest.fn().mockRejectedValue(error);
 
       // Act
@@ -503,7 +503,7 @@ describe("Product Controller Tests", () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith({
         success: false,
-        message: "Invalid filter",
+        message: "Invalid filter type",
         error,
       });
     });
