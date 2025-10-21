@@ -34,6 +34,15 @@ Tests have been written in part with the help of AI
 
 ### MS 2
 
+**Pearlynn Toh Jieying**
+| Component | Integration Tests | UI/E2E Tests | Bug Fixes |
+|-----------|-------------------|--------------|-----------|
+| **Protected Routes** | `authMiddleware.integration.test.js` | None | None |
+| **Registration** | • `Registration.integration.test.js`<br>• `authControllerLoginRegisterForgotPassword.integration.test.js` | `Register.spec.js` | None |
+| **Login** | `Login.integration.test.js`<br>• `authControllerLoginRegisterForgotPassword.integration.test.js` | `Login.spec.js` | When I try to access `http://localhost:3000/dashboard/user` when I am logged out, I get redirected to `http://login/` instead of `http://localhost:3000/login` |
+| **ForgotPassword** | • `ForgotPassword.integration.test.js`<br>• `authControllerLoginRegisterForgotPassword.integration.test.js` | •`ForgotPassword.spec.js` | Add missing ForgotPassword page |
+| **Admin Dashboard** | `AdminDashboard.integration.js` | • `AdminMenu.spec.js`<br>• `AdminDashboard.spec.js` | None |
+
 **Wong Li Yuan**
 | Component | Integration Tests | UI/E2E Tests | Bug Fixes |
 |-----------|-------------------|--------------|-----------|
