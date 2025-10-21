@@ -89,6 +89,7 @@ export default {
     "<rootDir>/client/src/components/Layout.js",
     "<rootDir>/client/src/pages/user/Profile.js",
     "<rootDir>/client/src/pages/admin/Users.js",
+    "<rootDir>/client/src/pages/Pagenotfound.js",
   ],
   coverageThreshold: {
     // Temporary lower the coverage thresholds form 100 to 90 to allow for CI to pass
